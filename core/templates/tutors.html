@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Tutors</title>
+</head>
+
+<body>
+    <h2>Tutors List</h2>
+    <a href="{% url 'home' %}">← Back to Home</a><br><br>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Tutor Name</th>
+            <th>Completed Sessions</th>
+            <th>Avg Rating</th>
+            <th>Status</th>
+        </tr>
+        {% for t in tutors %}
+        <tr>
+            <td>{{ t.student.name }}</td>
+            <td>{{ t.completed_sessions }}</td>
+            <td>{{ t.avg_rating }}</td>
+            <td>{{ t.tutor_status }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4">No tutors found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Learners</title>
+</head>
+
+<body>
+    <h2>Learners List</h2>
+    <a href="{% url 'home' %}">← Back to Home</a><br><br>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Learner Name</th>
+            <th>Level</th>
+        </tr>
+        {% for l in learners %}
+        <tr>
+            <td>{{ l.student.name }}</td>
+            <td>{{ l.learner_level }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2">No learners found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

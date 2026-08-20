@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Badges</title>
+</head>
+
+<body>
+    <h2>Badges List</h2>
+    <a href="{% url 'home' %}">← Back to Home</a><br><br>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Badge ID</th>
+            <th>Badge Name</th>
+            <th>Description</th>
+        </tr>
+        {% for bg in badges %}
+        <tr>
+            <td>{{ bg.badge_id }}</td>
+            <td>{{ bg.badge_name }}</td>
+            <td>{{ bg.description }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No badges found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

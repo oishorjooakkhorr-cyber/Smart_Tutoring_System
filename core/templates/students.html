@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Students</title>
+</head>
+
+<body>
+    <h2>Students List</h2>
+    <a href="{% url 'home' %}">← Back to Home</a><br><br>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Semester</th>
+            <th>Department</th>
+        </tr>
+        {% for s in students %}
+        <tr>
+            <td>{{ s.sid }}</td>
+            <td>{{ s.name }}</td>
+            <td>{{ s.email }}</td>
+            <td>{{ s.phone }}</td>
+            <td>{{ s.semester }}</td>
+            <td>{{ s.department.dept_name }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No students found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

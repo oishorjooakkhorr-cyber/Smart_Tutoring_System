@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Home</title>
+</head>
+
+<body>
+    <h2>Welcome, {{ user.username }}!</h2>
+    <a href="{% url 'logout' %}">Logout</a>
+    <hr>
+    <ul>
+        <li><a href="{% url 'students' %}">View Students</a></li>
+        <li><a href="{% url 'tutors' %}">View Tutors</a></li>
+        <li><a href="{% url 'learners' %}">View Learners</a></li>
+        <li><a href="{% url 'skills' %}">View Skills</a></li>
+        <li><a href="{% url 'slots' %}">View Available Slots</a></li>
+        <li><a href="{% url 'bookings' %}">View Bookings</a></li>
+        <li><a href="{% url 'ratings' %}">View Ratings</a></li>
+        <li><a href="{% url 'badges' %}">View Badges</a></li>
+    </ul>
+</body>
+
+</html>

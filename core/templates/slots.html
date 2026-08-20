@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Available Slots</title>
+</head>
+
+<body>
+    <h2>Available Slots</h2>
+    <a href="{% url 'home' %}">← Back to Home</a><br><br>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Tutor</th>
+            <th>Slot No</th>
+            <th>Date</th>
+            <th>Start Time</th>
+            <th>End Time</th>
+            <th>Mode</th>
+            <th>Action</th> <!-- 1. ADDED THIS HEADER -->
+        </tr>
+        {% for sl in slots %}
+        <tr>
+            <td>{{ sl.tutor.student.name }}</td>
+            <td>{{ sl.slot_no }}</td>
+            <td>{{ sl.date }}</td>
+            <td>{{ sl.start_time }}</td>
+            <td>{{ sl.end_time }}</td>
+            <td>{{ sl.mode }}</td>
+            <td> <!-- 2. ADDED THIS BUTTON CELL HERE -->
+                <a href="{% url 'book_slot' sl.slot_no %}"><button>Book Slot</button></a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7">No slots available.</td> <!-- Updated colspan to 7 -->
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

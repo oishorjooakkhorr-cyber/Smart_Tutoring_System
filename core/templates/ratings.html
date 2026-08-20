@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ratings</title>
+</head>
+
+<body>
+    <h2>Ratings List</h2>
+    <a href="{% url 'home' %}">← Back to Home</a><br><br>
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Rating ID</th>
+            <th>Learner</th>
+            <th>Tutor</th>
+            <th>Rating</th>
+            <th>Comment</th>
+            <th>Warning</th>
+        </tr>
+        {% for r in ratings %}
+        <tr>
+            <td>{{ r.rating_id }}</td>
+            <td>{{ r.learner.student.name }}</td>
+            <td>{{ r.tutor.student.name }}</td>
+            <td>{{ r.rating }} / 5</td>
+            <td>{{ r.comment }}</td>
+            <td>{{ r.warning }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6">No ratings found.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

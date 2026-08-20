@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Book Slot</title>
+</head>
+
+<body>
+    <h2>Confirm Booking</h2>
+    <p><strong>Tutor:</strong> {{ slot.tutor.student.name }}</p>
+    <p><strong>Date:</strong> {{ slot.date }}</p>
+    <p><strong>Time:</strong> {{ slot.start_time }} - {{ slot.end_time }}</p>
+    <p><strong>Mode:</strong> {{ slot.mode }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Confirm & Book</button>
+        <a href="{% url 'slots' %}">Cancel</a>
+    </form>
+</body>
+
+</html>
