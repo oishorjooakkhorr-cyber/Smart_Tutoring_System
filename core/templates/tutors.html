@@ -8,6 +8,36 @@
 <body>
     <h2>Tutors List</h2>
     <a href="{% url 'home' %}">← Back to Home</a><br><br>
+<form method="GET">
+
+    <input
+        type="text"
+        name="q"
+        placeholder="Search tutor by name"
+        value="{{ query }}"
+    >
+
+    <select name="status">
+        <option value="">All Status</option>
+
+        <option value="Active"
+            {% if status == "Active" %}selected{% endif %}>
+            Active
+        </option>
+
+        <option value="Inactive"
+            {% if status == "Inactive" %}selected{% endif %}>
+            Inactive
+        </option>
+    </select>
+
+    <button type="submit">Search / Filter</button>
+
+    <a href="{% url 'tutors' %}">Clear</a>
+
+</form>
+
+<br>
     <table border="1" cellpadding="6">
         <tr>
             <th>Tutor Name</th>

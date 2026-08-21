@@ -37,11 +37,25 @@ def students(request):
     data = Student.objects.select_related("department").all()
     return render(request, "students.html", {"students": data})
 
-
+#tutor search and filtering
 @login_required(login_url="login")
 def tutors(request):
     data = Tutor.objects.select_related("student").all()
-    return render(request, "tutors.html", {"tutors": data})
+
+    query = request.GET.get("q", "")
+    status = request.GET.get("status", "")
+
+    if query:
+        data = data.filter(student__name__icontains=query)
+
+    if status:
+        data = data.filter(tutor_status=status)
+
+    return render(request, "tutors.html", {
+        "tutors": data,
+        "query": query,
+        "status": status
+    })
 
 
 @login_required(login_url="login")
