@@ -1,7 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.http import Http404
@@ -23,50 +22,128 @@ def dictfetchone(cursor):
 
 
 def login_view(request):
-    if request.user.is_authenticated:
+    # Check if custom student session is already active
+    if "user_email" in request.session:
         return redirect("home")
 
+    error = None
     if request.method == "POST":
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect("home")
-    else:
-        form = AuthenticationForm()
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
-    return render(request, "login.html", {"form": form})
+        # Query custom core_student table directly
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT email, password FROM core_student WHERE email = %s", [email])
+            student = cursor.fetchone()
+
+        if student and student[1] == password:  # Validate email and password
+            request.session["user_email"] = student[0]  # Store in session
+            return redirect("home")
+        else:
+            error = "Invalid email or password"
+
+    return render(request, "login.html", {"error": error})
+
+
+
+from django.shortcuts import render, redirect
+from django.db import connection
+
+def dictfetchall(cursor):
+    """Return all rows from a cursor as a dict"""
+    columns = [col[0] for col in cursor.description]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+def signup_view(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        phone = request.POST.get("phone")
+        semester = request.POST.get("semester")
+        department_id = request.POST.get("department_id")
+        password = request.POST.get("password")
+
+        is_learner = request.POST.get("is_learner")
+        is_tutor = request.POST.get("is_tutor")
+
+        slot_date = request.POST.get("slot_date")
+        start_time = request.POST.get("start_time")
+        end_time = request.POST.get("end_time")
+        mode = request.POST.get("mode")
+
+        with connection.cursor() as cursor:
+            # 1. Insert into core_student
+            cursor.execute("""
+                INSERT INTO core_student (name, email, phone, semester, department_id, password)
+                VALUES (%s, %s, %s, %s, %s, %s);
+            """, [name, email, phone, semester, department_id, password])
+
+            # 2. Get newly created student ID
+            cursor.execute("SELECT sid FROM core_student WHERE email = %s;", [email])
+            student_id = cursor.fetchone()[0]
+
+            # 3. Add to core_learner if checked
+            if is_learner:
+                cursor.execute("INSERT INTO core_learner (student_id) VALUES (%s);", [student_id])
+
+            # 4. Add to core_tutor and post initial slot if checked
+            if is_tutor:
+                cursor.execute("INSERT INTO core_tutor (student_id) VALUES (%s);", [student_id])
+
+                if slot_date and start_time and end_time:
+                    cursor.execute("""
+                        INSERT INTO core_availableslot (tutor_id, date, start_time, end_time, mode)
+                        VALUES (%s, %s, %s, %s, %s);
+                    """, [student_id, slot_date, start_time, end_time, mode])
+
+        # AUTO-LOGIN: Store active user credentials in session
+        request.session["user_email"] = email
+        request.session["user_name"] = name
+
+        # Redirect straight into the app home page
+        return redirect("home")
+
+    # Fetch departments dropdown list
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT dept_id, dept_name FROM core_department;")
+        departments = cursor.fetchall()
+
+    return render(request, "signup.html", {"departments": departments})
+
 
 
 def logout_view(request):
+    request.session.flush()  # Clear custom user session
     logout(request)
     return redirect("login")
 
 
-@login_required(login_url="login")
 def home(request):
     return render(request, "home.html")
 
 
-@login_required(login_url="login")
 def students(request):
+    # Enforce session check
+    if "user_email" not in request.session:
+        return redirect("login")
+
+    # Joined ON s.department_id = d.dept_id
     query = """
-        SELECT s.*, d.dept_name 
+        SELECT s.sid, s.name, s.email, s.phone, s.semester, s.password, d.dept_name 
         FROM core_student s
-        JOIN core_department d ON s.department_id = d.dept_id
+        JOIN core_department d ON s.department_id = d.dept_id;
     """
     with connection.cursor() as cursor:
         cursor.execute(query)
         data = dictfetchall(cursor)
 
-    # Attach department dictionary structure for template compatibility
+    # Reconstruct nested structure for template rendering
     for row in data:
         row["department"] = {"dept_name": row["dept_name"]}
 
     return render(request, "students.html", {"students": data})
 
 
-@login_required(login_url="login")
 def tutors(request):
     search_query = request.GET.get("q", "")
     status_filter = request.GET.get("status", "")
@@ -101,7 +178,6 @@ def tutors(request):
     )
 
 
-@login_required(login_url="login")
 def learners(request):
     query = """
         SELECT l.*, s.name, s.email, s.phone 
@@ -118,7 +194,6 @@ def learners(request):
     return render(request, "learners.html", {"learners": data})
 
 
-@login_required(login_url="login")
 def skills(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM core_skill")
@@ -127,7 +202,6 @@ def skills(request):
     return render(request, "skills.html", {"skills": data})
 
 
-@login_required(login_url="login")
 def slots(request):
     query = """
         SELECT slot.*, s.name AS student_name
@@ -145,19 +219,22 @@ def slots(request):
     return render(request, "slots.html", {"slots": data})
 
 
-@login_required(login_url="login")
 def bookings(request):
     query = """
         SELECT b.*, 
                ls.name AS learner_name, 
                ts.name AS tutor_name,
-               slot.slot_no, slot.start_time, slot.end_time, slot.mode
+               COALESCE(slot.slot_no, 0) AS slot_no, 
+               slot.start_time, 
+               slot.end_time, 
+               slot.mode
         FROM core_booking b
         JOIN core_learner l ON b.learner_id = l.student_id
         JOIN core_student ls ON l.student_id = ls.sid
         JOIN core_tutor t ON b.tutor_id = t.student_id
         JOIN core_student ts ON t.student_id = ts.sid
-        JOIN core_availableslot slot ON b.slot_id = slot.id
+        LEFT JOIN core_availableslot slot ON b.slot_id = slot.id
+        ORDER BY b.booking_id ASC;
     """
     with connection.cursor() as cursor:
         cursor.execute(query)
@@ -176,7 +253,6 @@ def bookings(request):
     return render(request, "bookings.html", {"bookings": data})
 
 
-@login_required(login_url="login")
 def ratings(request):
     query = """
         SELECT r.*, 
@@ -199,7 +275,6 @@ def ratings(request):
     return render(request, "ratings.html", {"ratings": data})
 
 
-@login_required(login_url="login")
 def badges(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM core_badge")
@@ -208,11 +283,10 @@ def badges(request):
     return render(request, "badges.html", {"badges": data})
 
 
-# Feature 1 -> slot booking with Raw SQL
-@login_required(login_url="login")
 def book_slot(request, slot_id):
+    active_email = request.session.get("user_email")
+
     with connection.cursor() as cursor:
-        # Fetch target slot using slot_no
         cursor.execute(
             """
             SELECT slot.*, ts.name AS tutor_name 
@@ -230,7 +304,6 @@ def book_slot(request, slot_id):
 
         slot["tutor"] = {"student": {"name": slot["tutor_name"]}}
 
-        # Get learner profile corresponding to current logged-in user email
         cursor.execute(
             """
             SELECT l.student_id 
@@ -238,11 +311,10 @@ def book_slot(request, slot_id):
             JOIN core_student s ON l.student_id = s.sid
             WHERE s.email = %s
         """,
-            [request.user.email],
+            [active_email],
         )
         learner = dictfetchone(cursor)
 
-        # Fallback to first available learner if specific user isn't found
         if not learner:
             cursor.execute("SELECT student_id FROM core_learner LIMIT 1")
             learner = dictfetchone(cursor)

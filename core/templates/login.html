@@ -1,18 +1,33 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Login</title>
 </head>
-
 <body>
+
     <h2>Login to Smart Tutoring System</h2>
-    <hr>
+
+    {% if error %}
+        <p style="color: red; font-weight: bold;">{{ error }}</p>
+    {% endif %}
+
     <form method="POST">
         {% csrf_token %}
-        {{ form.as_p }}
+        <div>
+            <label>Email Address:</label><br>
+            <input type="email" name="email" placeholder="Enter your email" required>
+        </div>
+        <br>
+        <div>
+            <label>Password:</label><br>
+            <input type="password" name="password" placeholder="Enter your password" required>
+        </div>
+        <br>
         <button type="submit">Sign In</button>
     </form>
-</body>
 
+    <br>
+    <p>Don't have an account? <a href="{% url 'signup' %}">Sign up here</a>.</p>
+
+</body>
 </html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Student Registration</title>
+</head>
+
+<body>
+
+    <h2>Register for Smart Tutoring System</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div><label>Full Name:</label><br><input type="text" name="name" required></div><br>
+        <div><label>Email Address:</label><br><input type="email" name="email" required></div><br>
+        <div><label>Phone Number:</label><br><input type="text" name="phone" required></div><br>
+        <div><label>Semester:</label><br><input type="number" name="semester" required></div><br>
+
+        <div>
+            <label>Department:</label><br>
+            <select name="department_id" required>
+                {% for dept in departments %}
+                <option value="{{ dept.0 }}">{{ dept.1 }}</option>
+                {% endfor %}
+            </select>
+        </div><br>
+
+        <div><label>Password:</label><br><input type="password" name="password" required></div><br>
+
+        <div>
+            <label><strong>Select Role(s):</strong></label><br>
+            <input type="checkbox" name="is_learner" id="learner" checked>
+            <label for="learner">Register as Learner</label><br>
+
+            <input type="checkbox" name="is_tutor" id="tutor" onchange="toggleTutorSection()">
+            <label for="tutor">Register as Tutor</label>
+        </div><br>
+
+        <!-- Tutor Slot Inputs (hidden by default unless checked) -->
+        <div id="tutor-slot-section" style="display: none; border: 1px solid #ccc; padding: 15px;">
+            <h3>Post Initial Tutor Slot Availability</h3>
+            <div><label>Date:</label><br><input type="date" name="slot_date"></div><br>
+            <div><label>Start Time:</label><br><input type="time" name="start_time"></div><br>
+            <div><label>End Time:</label><br><input type="time" name="end_time"></div><br>
+            <div>
+                <label>Mode:</label><br>
+                <select name="mode">
+                    <option value="Online">Online</option>
+                    <option value="In-Person">In-Person</option>
+                </select>
+            </div>
+        </div><br>
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <br>
+    <p>Already have an account? <a href="{% url 'login' %}">Log in here</a>.</p>
+
+    <script>
+        function toggleTutorSection() {
+            var checkBox = document.getElementById("tutor");
+            var section = document.getElementById("tutor-slot-section");
+            section.style.display = checkBox.checked ? "block" : "none";
+        }
+    </script>
+
+</body>
+
+</html>

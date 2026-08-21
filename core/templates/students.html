@@ -8,6 +8,7 @@
 <body>
     <h2>Students List</h2>
     <a href="{% url 'home' %}">← Back to Home</a><br><br>
+
     <table border="1" cellpadding="6">
         <tr>
             <th>ID</th>
@@ -16,6 +17,9 @@
             <th>Phone</th>
             <th>Semester</th>
             <th>Department</th>
+            {% if is_admin_viewer %}
+            <th>Password</th>
+            {% endif %}
         </tr>
         {% for s in students %}
         <tr>
@@ -25,10 +29,13 @@
             <td>{{ s.phone }}</td>
             <td>{{ s.semester }}</td>
             <td>{{ s.department.dept_name }}</td>
+            {% if is_admin_viewer %}
+            <td>{{ s.password }}</td>
+            {% endif %}
         </tr>
         {% empty %}
         <tr>
-            <td colspan="6">No students found.</td>
+            <td colspan="{% if is_admin_viewer %}7{% else %}6{% endif %}">No students found.</td>
         </tr>
         {% endfor %}
     </table>
