@@ -10,11 +10,12 @@ class Department(models.Model):
 
 
 class Student(models.Model):
-    sid = models.AutoField(primary_key=True)
+    sid = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=15, unique=True)
     semester = models.IntegerField()
+    password = models.CharField(max_length=128)
 
     department = models.ForeignKey(
         Department,

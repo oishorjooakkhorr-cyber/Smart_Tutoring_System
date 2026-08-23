@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Skills</title>
+    <title>Rate Booking</title>
 
     
 
@@ -111,26 +111,26 @@
 </head>
 
 <body>
-    <h2>Skills List</h2>
-    <a href="{% url 'home' %}">← Back to Home</a><br><br>
-    <table border="1" cellpadding="6">
-        <tr>
-            <th>ID</th>
-            <th>Skill Name</th>
-            <th>Category</th>
-        </tr>
-        {% for sk in skills %}
-        <tr>
-            <td>{{ sk.skill_id }}</td>
-            <td>{{ sk.skill_name }}</td>
-            <td>{{ sk.category }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="3">No skills found.</td>
-        </tr>
-        {% endfor %}
-    </table>
+    <h2>Rate Session (Booking #{{ booking.booking_id }})</h2>
+    <a href="{% url 'bookings' %}">← Back to Bookings</a><br><br>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="rating">Rating (1-5):</label><br>
+        <select name="rating" id="rating" required>
+            <option value="">Select rating</option>
+            <option value="5">5 - Excellent</option>
+            <option value="4">4 - Good</option>
+            <option value="3">3 - Average</option>
+            <option value="2">2 - Poor</option>
+            <option value="1">1 - Terrible</option>
+        </select><br><br>
+
+        <label for="comment">Feedback / Comment:</label><br>
+        <textarea name="comment" id="comment" rows="4" cols="50" required></textarea><br><br>
+
+        <button type="submit">Submit Rating</button>
+    </form>
 </body>
 
 </html>
