@@ -1,14 +1,3 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-    <title>Skills</title>
-
-    
-
-
-    
-    
 
     <style>
         :root {
@@ -108,29 +97,15 @@
             margin: 0 auto;
         }
     </style>
-</head>
 
-<body>
-    <h2>Skills List</h2>
-    <a href="{% url 'home' %}">← Back to Home</a><br><br>
-    <table border="1" cellpadding="6">
-        <tr>
-            <th>ID</th>
-            <th>Skill Name</th>
-            <th>Category</th>
-        </tr>
-        {% for sk in skills %}
-        <tr>
-            <td>{{ sk.skill_id }}</td>
-            <td>{{ sk.skill_name }}</td>
-            <td>{{ sk.category }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="3">No skills found.</td>
-        </tr>
-        {% endfor %}
-    </table>
-</body>
 
-</html>
+    
+    
+
+
+
+    
+
+<h2>Welcome! Are you here to learn or teach?</h2>
+<a href="/learners/"><button>I am a Learner</button></a>
+<a href="/tutors/"><button>I am a Tutor</button></a>

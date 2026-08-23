@@ -56,6 +56,7 @@ def dictfetchall(cursor):
 
 def signup_view(request):
     if request.method == "POST":
+        sid = request.POST.get("sid")
         name = request.POST.get("name")
         email = request.POST.get("email")
         phone = request.POST.get("phone")
@@ -74,27 +75,32 @@ def signup_view(request):
         with connection.cursor() as cursor:
             # 1. Insert into core_student
             cursor.execute("""
-                INSERT INTO core_student (name, email, phone, semester, department_id, password)
-                VALUES (%s, %s, %s, %s, %s, %s);
-            """, [name, email, phone, semester, department_id, password])
+                INSERT INTO core_student (sid, name, email, phone, semester, department_id, password)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
+            """, [sid, name, email, phone, semester, department_id, password])
 
-            # 2. Get newly created student ID
-            cursor.execute("SELECT sid FROM core_student WHERE email = %s;", [email])
-            student_id = cursor.fetchone()[0]
-
-            # 3. Add to core_learner if checked
+            # 2. Add to core_learner if checked
             if is_learner:
-                cursor.execute("INSERT INTO core_learner (student_id) VALUES (%s);", [student_id])
+                cursor.execute(
+                    "INSERT INTO core_learner (student_id, learner_level) VALUES (%s, %s);", 
+                    [sid, "Beginner"]
+                )
 
-            # 4. Add to core_tutor and post initial slot if checked
+            # 3. Add to core_tutor and post initial slot if checked
             if is_tutor:
-                cursor.execute("INSERT INTO core_tutor (student_id) VALUES (%s);", [student_id])
+                cursor.execute(
+                    """
+                    INSERT INTO core_tutor (student_id, completed_sessions, avg_rating, tutor_status) 
+                    VALUES (%s, %s, %s, %s);
+                    """, 
+                    [sid, 0, 0.0, "Active"]
+                )
 
                 if slot_date and start_time and end_time:
                     cursor.execute("""
                         INSERT INTO core_availableslot (tutor_id, date, start_time, end_time, mode)
                         VALUES (%s, %s, %s, %s, %s);
-                    """, [student_id, slot_date, start_time, end_time, mode])
+                    """, [sid, slot_date, start_time, end_time, mode])
 
         # AUTO-LOGIN: Store active user credentials in session
         request.session["user_email"] = email
@@ -339,3 +345,52 @@ def book_slot(request, slot_id):
         return redirect("bookings")
 
     return render(request, "book_slot.html", {"slot": slot})
+
+
+def rate_booking(request, booking_id):
+    active_email = request.session.get("user_email")
+    if not active_email:
+        return redirect("login")
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT b.*
+            FROM core_booking b
+            WHERE b.booking_id = %s
+            """,
+            [booking_id],
+        )
+        booking = dictfetchone(cursor)
+
+        if not booking:
+            raise Http404("Booking does not exist")
+
+    if request.method == "POST":
+        rating = request.POST.get("rating")
+        comment = request.POST.get("comment", "")
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT rating_id FROM core_ratings WHERE booking_id = %s", [booking_id])
+            existing_rating = cursor.fetchone()
+
+            if existing_rating:
+                cursor.execute(
+                    """
+                    UPDATE core_ratings 
+                    SET rating = %s, comment = %s 
+                    WHERE booking_id = %s
+                    """,
+                    [rating, comment, booking_id]
+                )
+            else:
+                cursor.execute(
+                    """
+                    INSERT INTO core_ratings (rating, comment, warning, learner_id, tutor_id, booking_id)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    [rating, comment, False, booking["learner_id"], booking["tutor_id"], booking_id]
+                )
+        return redirect("ratings")
+
+    return render(request, "rate_booking.html", {"booking": booking})
