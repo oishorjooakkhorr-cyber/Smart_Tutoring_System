@@ -28,19 +28,45 @@ def login_view(request):
 
     error = None
     if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
+        is_admin_login = request.POST.get("is_admin_login")
 
-        # Query custom core_student table directly
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT email, password FROM core_student WHERE email = %s", [email])
-            student = cursor.fetchone()
+        if is_admin_login:
+            admin_id = request.POST.get("admin_id")
+            password = request.POST.get("password")
 
-        if student and student[1] == password:  # Validate email and password
-            request.session["user_email"] = student[0]  # Store in session
-            return redirect("home")
+            if admin_id == "cse370" and password == "cse370":
+                request.session["user_email"] = "admin"
+                request.session["user_name"] = "Administrator"
+                request.session["role"] = "admin"
+                return redirect("home")
+            else:
+                error = "Invalid Admin ID or password"
         else:
-            error = "Invalid email or password"
+            email = request.POST.get("email")
+            password = request.POST.get("password")
+
+            # Query custom core_student table directly
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT sid, name, email, password FROM core_student WHERE email = %s", [email])
+                student = cursor.fetchone()
+
+                if student and student[3] == password:  # Validate email and password
+                    request.session["user_sid"] = student[0]
+                    request.session["user_name"] = student[1]
+                    request.session["user_email"] = student[2]  # Store in session
+                    request.session["role"] = "student"
+                    
+                    # Check if they are a learner
+                    cursor.execute("SELECT 1 FROM core_learner WHERE student_id = %s", [student[0]])
+                    request.session["is_learner"] = True if cursor.fetchone() else False
+                    
+                    # Check if they are a tutor
+                    cursor.execute("SELECT 1 FROM core_tutor WHERE student_id = %s", [student[0]])
+                    request.session["is_tutor"] = True if cursor.fetchone() else False
+                    
+                    return redirect("home")
+                else:
+                    error = "Invalid student email or password"
 
     return render(request, "login.html", {"error": error})
 
@@ -86,7 +112,7 @@ def signup_view(request):
                     [sid, "Beginner"]
                 )
 
-            # 3. Add to core_tutor and post initial slot if checked
+            # 3. Add to core_tutor
             if is_tutor:
                 cursor.execute(
                     """
@@ -96,15 +122,13 @@ def signup_view(request):
                     [sid, 0, 0.0, "Active"]
                 )
 
-                if slot_date and start_time and end_time:
-                    cursor.execute("""
-                        INSERT INTO core_availableslot (tutor_id, date, start_time, end_time, mode)
-                        VALUES (%s, %s, %s, %s, %s);
-                    """, [sid, slot_date, start_time, end_time, mode])
-
         # AUTO-LOGIN: Store active user credentials in session
+        request.session["user_sid"] = sid
         request.session["user_email"] = email
         request.session["user_name"] = name
+        request.session["role"] = "student"
+        request.session["is_learner"] = bool(is_learner)
+        request.session["is_tutor"] = bool(is_tutor)
 
         # Redirect straight into the app home page
         return redirect("home")
@@ -125,13 +149,20 @@ def logout_view(request):
 
 
 def home(request):
-    return render(request, "home.html")
+    if "user_email" not in request.session:
+        return redirect("login")
+    return render(request, "home.html", {
+        "user_name": request.session.get("user_name", request.session.get("user_email")),
+        "role": request.session.get("role"),
+        "is_learner": request.session.get("is_learner", False),
+        "is_tutor": request.session.get("is_tutor", False)
+    })
 
 
 def students(request):
-    # Enforce session check
-    if "user_email" not in request.session:
-        return redirect("login")
+    # Enforce session and admin check
+    if request.session.get("role") != "admin":
+        return redirect("home")
 
     # Joined ON s.department_id = d.dept_id
     query = """
@@ -153,13 +184,25 @@ def students(request):
 def tutors(request):
     search_query = request.GET.get("q", "")
     status_filter = request.GET.get("status", "")
+    skill_filter = request.GET.get("skill", "")
+    min_rating = request.GET.get("min_rating", "")
 
+    # Base SQL Query using Raw SQL
     sql = """
-        SELECT t.*, s.name, s.email, s.phone, s.semester
+        SELECT DISTINCT t.student_id, t.completed_sessions, t.avg_rating, t.tutor_status, 
+               s.name, s.email, s.phone, s.semester
         FROM core_tutor t
         JOIN core_student s ON t.student_id = s.sid
-        WHERE 1=1
     """
+    
+    # If filtering by skill, we must join the teaches and skill tables
+    if skill_filter:
+        sql += """
+            JOIN core_teaches teaches ON t.student_id = teaches.tutor_id
+            JOIN core_skill sk ON teaches.skill_id = sk.skill_id
+        """
+
+    sql += " WHERE 1=1"
     params = []
 
     if search_query:
@@ -170,9 +213,21 @@ def tutors(request):
         sql += " AND t.tutor_status = %s"
         params.append(status_filter)
 
+    if skill_filter:
+        sql += " AND sk.skill_name = %s"
+        params.append(skill_filter)
+        
+    if min_rating:
+        sql += " AND t.avg_rating >= %s"
+        params.append(min_rating)
+
     with connection.cursor() as cursor:
         cursor.execute(sql, params)
         data = dictfetchall(cursor)
+        
+        # Fetch all available skills for the dropdown menu
+        cursor.execute("SELECT skill_name FROM core_skill ORDER BY skill_name")
+        all_skills = [row[0] for row in cursor.fetchall()]
 
     for row in data:
         row["student"] = {"name": row["name"], "email": row["email"], "phone": row["phone"]}
@@ -180,11 +235,21 @@ def tutors(request):
     return render(
         request,
         "tutors.html",
-        {"tutors": data, "query": search_query, "status": status_filter},
+        {
+            "tutors": data, 
+            "query": search_query, 
+            "status": status_filter,
+            "skill": skill_filter,
+            "min_rating": min_rating,
+            "all_skills": all_skills,
+        },
     )
 
 
 def learners(request):
+    if request.session.get("role") != "admin":
+        return redirect("home")
+
     query = """
         SELECT l.*, s.name, s.email, s.phone 
         FROM core_learner l
@@ -224,8 +289,42 @@ def slots(request):
 
     return render(request, "slots.html", {"slots": data})
 
+def add_slot(request):
+    if not request.session.get("is_tutor"):
+        return redirect("home")
+        
+    tutor_id = request.session.get("user_sid")
+    
+    if request.method == "POST":
+        slot_date = request.POST.get("slot_date")
+        start_time = request.POST.get("start_time")
+        end_time = request.POST.get("end_time")
+        mode = request.POST.get("mode")
+        
+        with connection.cursor() as cursor:
+            # Need to get a slot_no. Let's just find the max slot_no for this tutor and add 1
+            cursor.execute("SELECT MAX(slot_no) FROM core_availableslot WHERE tutor_id = %s", [tutor_id])
+            max_slot = cursor.fetchone()[0]
+            next_slot_no = (max_slot or 0) + 1
+            
+            cursor.execute("""
+                INSERT INTO core_availableslot (tutor_id, slot_no, date, start_time, end_time, mode)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, [tutor_id, next_slot_no, slot_date, start_time, end_time, mode])
+            
+        return redirect("slots")
+        
+    return render(request, "add_slot.html")
+
 
 def bookings(request):
+    active_email = request.session.get("user_email")
+    role = request.session.get("role")
+    active_sid = request.session.get("user_sid")
+
+    if not active_email:
+        return redirect("login")
+
     query = """
         SELECT b.*, 
                ls.name AS learner_name, 
@@ -240,10 +339,18 @@ def bookings(request):
         JOIN core_tutor t ON b.tutor_id = t.student_id
         JOIN core_student ts ON t.student_id = ts.sid
         LEFT JOIN core_availableslot slot ON b.slot_id = slot.id
-        ORDER BY b.booking_id ASC;
     """
+    
+    params = []
+    # If not admin, only show bookings where the current user is either the learner or the tutor
+    if role != "admin":
+        query += " WHERE b.learner_id = %s OR b.tutor_id = %s"
+        params.extend([active_sid, active_sid])
+
+    query += " ORDER BY b.booking_id ASC"
+
     with connection.cursor() as cursor:
-        cursor.execute(query)
+        cursor.execute(query, params)
         data = dictfetchall(cursor)
 
     for row in data:
@@ -256,7 +363,7 @@ def bookings(request):
             "mode": row["mode"],
         }
 
-    return render(request, "bookings.html", {"bookings": data})
+    return render(request, "bookings.html", {"bookings": data, "role": role})
 
 
 def ratings(request):
@@ -299,7 +406,7 @@ def book_slot(request, slot_id):
             FROM core_availableslot slot
             JOIN core_tutor t ON slot.tutor_id = t.student_id
             JOIN core_student ts ON t.student_id = ts.sid
-            WHERE slot.slot_no = %s
+            WHERE slot.id = %s
         """,
             [slot_id],
         )
@@ -329,6 +436,41 @@ def book_slot(request, slot_id):
 
     if request.method == "POST":
         with connection.cursor() as cursor:
+            # CHECK 1: Is this slot already booked by someone else?
+            cursor.execute(
+                "SELECT COUNT(*) FROM core_booking WHERE slot_id = %s AND status != 'Cancelled'",
+                [slot["id"]]
+            )
+            is_taken = cursor.fetchone()[0]
+
+            if is_taken > 0:
+                return render(request, "book_slot.html", {
+                    "slot": slot, 
+                    "error": "This slot has already been booked by another learner."
+                })
+
+            # CHECK 2: Does the learner already have a booking that overlaps with this time?
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM core_booking b
+                JOIN core_availableslot s ON b.slot_id = s.id
+                WHERE b.learner_id = %s 
+                  AND s.date = %s 
+                  AND s.start_time < %s 
+                  AND s.end_time > %s
+                  AND b.status != 'Cancelled'
+                """,
+                [learner_id, slot["date"], slot["end_time"], slot["start_time"]]
+            )
+            has_conflict = cursor.fetchone()[0]
+
+            if has_conflict > 0:
+                return render(request, "book_slot.html", {
+                    "slot": slot, 
+                    "error": "You already have a confirmed booking that conflicts with this time."
+                })
+
+            # If no conflicts, insert the booking
             cursor.execute(
                 """
                 INSERT INTO core_booking (date, status, learner_id, tutor_id, slot_id)
@@ -394,3 +536,29 @@ def rate_booking(request, booking_id):
         return redirect("ratings")
 
     return render(request, "rate_booking.html", {"booking": booking})
+
+def warnings_view(request):
+    if request.session.get("role") != "admin":
+        return redirect("home")
+
+    # Analytical Query: Find tutors where >70% of their ratings are < 3
+    query = """
+        SELECT 
+            t.student_id,
+            s.name AS reported_tutor_name,
+            s.email AS tutor_email,
+            COUNT(r.rating_id) AS total_ratings,
+            SUM(CASE WHEN r.rating < 3 THEN 1 ELSE 0 END) AS bad_ratings,
+            (SUM(CASE WHEN r.rating < 3 THEN 1 ELSE 0 END) * 100.0 / COUNT(r.rating_id)) AS bad_percentage
+        FROM core_tutor t
+        JOIN core_student s ON t.student_id = s.sid
+        JOIN core_ratings r ON t.student_id = r.tutor_id
+        GROUP BY t.student_id, s.name, s.email
+        HAVING COUNT(r.rating_id) > 0 
+           AND (SUM(CASE WHEN r.rating < 3 THEN 1 ELSE 0 END) * 100.0 / COUNT(r.rating_id)) >= 70
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        data = dictfetchall(cursor)
+
+    return render(request, "warnings.html", {"warnings": data})

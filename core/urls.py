@@ -11,9 +11,11 @@ urlpatterns = [
     path('learners/', views.learners, name='learners'),
     path('skills/', views.skills, name='skills'),
     path('slots/', views.slots, name='slots'),
+    path('slots/add/', views.add_slot, name='add_slot'),
     path('bookings/', views.bookings, name='bookings'),
     path('ratings/', views.ratings, name='ratings'),
     path('badges/', views.badges, name='badges'),
+    path('warnings/', views.warnings_view, name='warnings'),
     path('book_slot/<int:slot_id>/', views.book_slot, name='book_slot'),
     path('rate_booking/<int:booking_id>/', views.rate_booking, name='rate_booking'),
 ]

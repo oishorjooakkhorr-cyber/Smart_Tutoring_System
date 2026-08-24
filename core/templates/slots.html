@@ -132,7 +132,7 @@
             <td>{{ sl.end_time }}</td>
             <td>{{ sl.mode }}</td>
             <td> <!-- 2. ADDED THIS BUTTON CELL HERE -->
-                <a href="{% url 'book_slot' sl.slot_no %}"><button>Book Slot</button></a>
+                <a href="{% url 'book_slot' sl.id %}"><button>Book Slot</button></a>
             </td>
         </tr>
         {% empty %}
