@@ -134,5 +134,24 @@
     <br>
     <p>Don't have an account? <a href="{% url 'signup' %}">Sign up here</a>.</p>
 
+    <hr style="margin: 40px 0; border: 0; border-top: 1px solid var(--border-color);">
+
+    <h2 style="color: #374151;">Admin Login</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="is_admin_login" value="true">
+        <div>
+            <label>Admin ID:</label><br>
+            <input type="text" name="admin_id" placeholder="Enter admin ID (e.g. cse370)" required>
+        </div>
+        <br>
+        <div>
+            <label>Password:</label><br>
+            <input type="password" name="password" placeholder="Enter admin password" required>
+        </div>
+        <br>
+        <button type="submit" style="background-color: #374151;">Sign In as Admin</button>
+    </form>
+
 </body>
 </html>

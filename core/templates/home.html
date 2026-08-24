@@ -111,19 +111,41 @@
 </head>
 
 <body>
-    <h2>Welcome, {{ user.username }}!</h2>
+    <h2>Welcome, {{ user_name }}!</h2>
     <a href="{% url 'logout' %}">Logout</a>
     <hr>
+    
+    {% if role == "admin" %}
+    <h3>Admin Portal</h3>
     <ul>
-        <li><a href="{% url 'students' %}">View Students</a></li>
-        <li><a href="{% url 'tutors' %}">View Tutors</a></li>
-        <li><a href="{% url 'learners' %}">View Learners</a></li>
+        <li><a href="{% url 'students' %}">View All Students</a></li>
+        <li><a href="{% url 'learners' %}">View All Learners</a></li>
+        <li><a href="{% url 'warnings' %}" style="color: #dc2626;">View Warnings (Moderation)</a></li>
+    </ul>
+    <hr>
+    {% endif %}
+
+    {% if is_learner or role == "admin" %}
+    <h3>Learner Portal</h3>
+    <ul>
+        <li><a href="{% url 'tutors' %}">Find Tutors</a></li>
         <li><a href="{% url 'skills' %}">View Skills</a></li>
-        <li><a href="{% url 'slots' %}">View Available Slots</a></li>
-        <li><a href="{% url 'bookings' %}">View Bookings</a></li>
-        <li><a href="{% url 'ratings' %}">View Ratings</a></li>
+        <li><a href="{% url 'slots' %}">Book Available Slots</a></li>
+        <li><a href="{% url 'bookings' %}">My Sessions (Learner)</a></li>
+    </ul>
+    {% endif %}
+
+    {% if is_tutor or role == "admin" %}
+    <hr>
+    <h3>Tutor Portal</h3>
+    <ul>
+        <li><a href="{% url 'add_slot' %}">Post New Availability Slot</a></li>
+        <li><a href="{% url 'bookings' %}">My Teaching Sessions</a></li>
+        <li><a href="{% url 'ratings' %}">View My Ratings</a></li>
         <li><a href="{% url 'badges' %}">View Badges</a></li>
     </ul>
+    {% endif %}
+
 </body>
 
 </html>

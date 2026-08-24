@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Moderation - Warnings</title>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f9fafb;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px 40px;
+        }
+
+        h2 {
+            color: #dc2626; /* red for warnings */
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: var(--card-bg);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #fef2f2; /* light red hover */
+        }
+    </style>
+</head>
+<body>
+    <h2>Admin Dashboard - Reported Sessions (Warnings)</h2>
+    <a href="{% url 'home' %}">← Back to Home</a><br><br>
+
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Flagged Tutor Name</th>
+            <th>Tutor Email</th>
+            <th>Total Ratings Received</th>
+            <th>Negative Ratings (< 3)</th>
+            <th>Negative Percentage</th>
+        </tr>
+        {% for w in warnings %}
+        <tr>
+            <td><strong>{{ w.reported_tutor_name }}</strong></td>
+            <td>{{ w.tutor_email }}</td>
+            <td>{{ w.total_ratings }}</td>
+            <td style="color: #dc2626; font-weight: bold;">{{ w.bad_ratings }}</td>
+            <td style="color: #dc2626; font-weight: bold;">{{ w.bad_percentage|floatformat:1 }}%</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No tutors currently exceed the 70% negative rating threshold.</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
