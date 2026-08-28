@@ -200,21 +200,21 @@
             <select name="skill" style="width: 200px;">
                 <option value="">All Skills</option>
                 {% for s in all_skills %}
-                <option value="{{ s }}" {% if s==skill %}selected{% endif %}>{{ s }}</option>
+                <option value="{{ s }}" {% if s == skill %}selected{% endif %}>{{ s }}</option>
                 {% endfor %}
             </select>
 
             <select name="min_rating" style="width: 160px;">
                 <option value="">Any Rating</option>
-                <option value="3.0" {% if min_rating=="3.0" %}selected{% endif %}>⭐ 3.0 & Up</option>
-                <option value="4.0" {% if min_rating=="4.0" %}selected{% endif %}>⭐ 4.0 & Up</option>
-                <option value="4.5" {% if min_rating=="4.5" %}selected{% endif %}>⭐ 4.5 & Up</option>
+                <option value="3.0" {% if min_rating == "3.0" %}selected{% endif %}>⭐ 3.0 & Up</option>
+                <option value="4.0" {% if min_rating == "4.0" %}selected{% endif %}>⭐ 4.0 & Up</option>
+                <option value="4.5" {% if min_rating == "4.5" %}selected{% endif %}>⭐ 4.5 & Up</option>
             </select>
 
             <select name="status" style="width: 150px;">
-                <option value="">All Status</option>
-                <option value="Active" {% if status=="Active" %}selected{% endif %}>Active</option>
-                <option value="Inactive" {% if status=="Inactive" %}selected{% endif %}>Inactive</option>
+                <option value="">Any Status</option>
+                <option value="Active" {% if status == "Active" %}selected{% endif %}>Active</option>
+                <option value="Inactive" {% if status == "Inactive" %}selected{% endif %}>Inactive</option>
             </select>
 
             <button type="submit">Filter</button>
