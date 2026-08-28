@@ -9,11 +9,9 @@ django.setup()
 from django.db import connection
 
 
-def get_or_create_sql(cursor, table, match_col, match_val, insert_cols, insert_vals):
+def get_or_create_sql(cursor, table, pk_col, match_col, match_val, insert_cols, insert_vals):
     """Helper function to replicate get_or_create behavior using Raw SQL."""
-    select_query = f"SELECT id FROM {table} WHERE {match_col} = %s;"
-    if match_col in ["dept_id", "sid", "skill_id", "badge_id", "booking_id", "rating_id"]:
-        select_query = f"SELECT {match_col} FROM {table} WHERE {match_col} = %s;"
+    select_query = f"SELECT {pk_col} FROM {table} WHERE {match_col} = %s;"
 
     cursor.execute(select_query, [match_val])
     row = cursor.fetchone()
@@ -42,7 +40,7 @@ def populate():
         departments = []
         for d_name in depts_data:
             d_id = get_or_create_sql(
-                cursor, "core_department", "dept_name", d_name, ["dept_name"], [d_name]
+                cursor, "core_department", "dept_id", "dept_name", d_name, ["dept_name"], [d_name]
             )
             departments.append(d_id)
 
@@ -63,20 +61,20 @@ def populate():
         ]
 
         students = []
-        for name, email, phone, sem, dept_id in students_info:
+        for idx, (name, email, phone, sem, dept_id) in enumerate(students_info):
             cursor.execute("SELECT sid FROM core_student WHERE email = %s;", [email])
             row = cursor.fetchone()
             if row:
                 s_id = row[0]
             else:
+                s_id = f"STU{1000 + idx}"
                 cursor.execute(
                     """
-                    INSERT INTO core_student (name, email, phone, semester, department_id)
-                    VALUES (%s, %s, %s, %s, %s);
+                    INSERT INTO core_student (sid, name, email, phone, semester, department_id, password)
+                    VALUES (%s, %s, %s, %s, %s, %s, 'password123');
                     """,
-                    [name, email, phone, sem, dept_id],
+                    [s_id, name, email, phone, sem, dept_id],
                 )
-                s_id = cursor.lastrowid
             students.append(s_id)
 
         # 3. Tutors (6 Tutors)
@@ -172,12 +170,12 @@ def populate():
         # 8. Available Slots (6 Slots)
         slots = []
         slot_configs = [
-            (tutors[0], 101, time(9, 0), time(10, 0), date(2026, 9, 1), "Online"),
-            (tutors[0], 102, time(10, 30), time(11, 30), date(2026, 9, 1), "Online"),
-            (tutors[1], 103, time(14, 0), time(15, 0), date(2026, 9, 2), "In-Person"),
-            (tutors[2], 104, time(11, 0), time(12, 0), date(2026, 9, 3), "Online"),
-            (tutors[3], 105, time(15, 0), time(16, 0), date(2026, 9, 4), "In-Person"),
-            (tutors[5], 106, time(16, 30), time(17, 30), date(2026, 9, 5), "Online"),
+            (tutors[0], 101, str(time(9, 0)), str(time(10, 0)), str(date(2026, 9, 1)), "Online"),
+            (tutors[0], 102, str(time(10, 30)), str(time(11, 30)), str(date(2026, 9, 1)), "Online"),
+            (tutors[1], 103, str(time(14, 0)), str(time(15, 0)), str(date(2026, 9, 2)), "In-Person"),
+            (tutors[2], 104, str(time(11, 0)), str(time(12, 0)), str(date(2026, 9, 3)), "Online"),
+            (tutors[3], 105, str(time(15, 0)), str(time(16, 0)), str(date(2026, 9, 4)), "In-Person"),
+            (tutors[5], 106, str(time(16, 30)), str(time(17, 30)), str(date(2026, 9, 5)), "Online"),
         ]
         for tut_id, num, st, et, d, mode in slot_configs:
             cursor.execute("SELECT id FROM core_availableslot WHERE tutor_id = %s AND slot_no = %s;", [tut_id, num])
@@ -214,9 +212,9 @@ def populate():
 
         # 10. Earns (3 rows)
         earns_configs = [
-            (tutors[0], badges[0], date(2026, 8, 10)),
-            (tutors[0], badges[1], date(2026, 8, 15)),
-            (tutors[3], badges[0], date(2026, 8, 18)),
+            (tutors[0], badges[0], str(date(2026, 8, 10))),
+            (tutors[0], badges[1], str(date(2026, 8, 15))),
+            (tutors[3], badges[0], str(date(2026, 8, 18))),
         ]
         for tut_id, bg_id, d_earned in earns_configs:
             cursor.execute("SELECT id FROM core_earns WHERE tutor_id = %s AND badge_id = %s;", [tut_id, bg_id])
@@ -229,12 +227,12 @@ def populate():
         # 11. Bookings (6 Bookings)
         bookings = []
         booking_configs = [
-            (learners[0], tutors[0], slots[0], date(2026, 9, 1), "Completed"),
-            (learners[1], tutors[0], slots[1], date(2026, 9, 1), "Completed"),
-            (learners[2], tutors[1], slots[2], date(2026, 9, 2), "Confirmed"),
-            (learners[3], tutors[2], slots[3], date(2026, 9, 3), "Pending"),
-            (learners[4], tutors[3], slots[4], date(2026, 9, 4), "Completed"),
-            (learners[5], tutors[5], slots[5], date(2026, 9, 5), "Confirmed"),
+            (learners[0], tutors[0], slots[0], str(date(2026, 9, 1)), "Completed"),
+            (learners[1], tutors[0], slots[1], str(date(2026, 9, 1)), "Completed"),
+            (learners[2], tutors[1], slots[2], str(date(2026, 9, 2)), "Confirmed"),
+            (learners[3], tutors[2], slots[3], str(date(2026, 9, 3)), "Pending"),
+            (learners[4], tutors[3], slots[4], str(date(2026, 9, 4)), "Completed"),
+            (learners[5], tutors[5], slots[5], str(date(2026, 9, 5)), "Confirmed"),
         ]
         for lr_id, tut_id, sl_id, d, st in booking_configs:
             cursor.execute(
