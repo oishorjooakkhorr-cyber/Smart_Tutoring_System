@@ -2,170 +2,256 @@
 <html>
 
 <head>
-    <title>Tutors</title>
-
-    
-
-
-    
-    
+    <title>Find Tutors - Smart Tutoring System</title>
 
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-color: #f9fafb;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --card-bg: #ffffff;
+            --bg-color: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-elevated: #334155;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
             margin: 0;
-            padding: 20px 40px;
+            padding: 30px 40px;
+            min-height: 100vh;
         }
 
-        h2, h3 {
-            color: var(--primary-color);
+        h2 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            margin-top: 0;
+            letter-spacing: -0.02em;
         }
 
-        a {
-            color: var(--primary-color);
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            padding: 6px 14px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             text-decoration: none;
-            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .back-link:hover {
+            color: #ffffff;
+            background-color: var(--bg-elevated);
+            border-color: #6366f1;
+            text-decoration: none;
+        }
+
+        .filter-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        input[type="text"],
+        select {
+            background-color: #0f172a;
+            color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 9px 12px;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: #6366f1;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+        }
+
+        select option {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        button {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px var(--primary-glow);
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            transform: translateY(-1px);
+        }
+
+        .clear-btn {
+            color: #94a3b8;
+            padding: 8px 14px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .clear-btn:hover {
+            color: #ffffff;
+            background-color: var(--bg-elevated);
+            text-decoration: none;
         }
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin: 20px 0;
-            background-color: var(--card-bg);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
         }
 
-        th, td {
-            padding: 12px 15px;
+        th,
+        td {
+            padding: 14px 18px;
             text-align: left;
-            border-bottom: 1px solid var(--border-color);
         }
 
         th {
-            background-color: #f3f4f6;
+            background-color: #162032;
             font-weight: 600;
-            color: #374151;
+            color: #94a3b8;
             text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            color: #f1f5f9;
+            border-bottom: 1px solid #283548;
+            font-size: 0.95rem;
         }
 
         tr:last-child td {
             border-bottom: none;
         }
 
-        tr:hover {
-            background-color: #f9fafb;
+        tr:hover td {
+            background-color: #243248;
         }
 
-        button, input[type="submit"] {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-
-        button:hover, input[type="submit"]:hover {
-            background-color: var(--primary-hover);
-        }
-
-        input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px 0;
+        .badge-pill {
             display: inline-block;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: inherit;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+
+        .badge-active {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-inactive {
+            background-color: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
         }
     </style>
 </head>
 
 <body>
-    <h2>Tutors List</h2>
-    <a href="{% url 'home' %}">← Back to Home</a><br><br>
-<form method="GET" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-    <input
-        type="text"
-        name="q"
-        placeholder="Search tutor by name"
-        value="{{ query }}"
-        style="width: 200px; margin-bottom: 0;"
-    >
+    <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+    <h2>🔍 Find Tutors</h2>
 
-    <select name="skill" style="width: 200px; margin-bottom: 0;">
-        <option value="">All Skills</option>
-        {% for s in all_skills %}
-            <option value="{{ s }}" {% if s == skill %}selected{% endif %}>{{ s }}</option>
-        {% endfor %}
-    </select>
+    <div class="filter-card">
+        <form method="GET" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+            <input type="text" name="q" placeholder="Search tutor by name..." value="{{ query }}" style="width: 220px;">
 
-    <select name="min_rating" style="width: 150px; margin-bottom: 0;">
-        <option value="">Any Rating</option>
-        <option value="3.0" {% if min_rating == "3.0" %}selected{% endif %}>3.0 & Up</option>
-        <option value="4.0" {% if min_rating == "4.0" %}selected{% endif %}>4.0 & Up</option>
-        <option value="4.5" {% if min_rating == "4.5" %}selected{% endif %}>4.5 & Up</option>
-    </select>
+            <select name="skill" style="width: 200px;">
+                <option value="">All Skills</option>
+                {% for s in all_skills %}
+                <option value="{{ s }}" {% if s==skill %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
 
-    <select name="status" style="width: 150px; margin-bottom: 0;">
-        <option value="">All Status</option>
-        <option value="Active" {% if status == "Active" %}selected{% endif %}>Active</option>
-        <option value="Inactive" {% if status == "Inactive" %}selected{% endif %}>Inactive</option>
-    </select>
+            <select name="min_rating" style="width: 160px;">
+                <option value="">Any Rating</option>
+                <option value="3.0" {% if min_rating=="3.0" %}selected{% endif %}>⭐ 3.0 & Up</option>
+                <option value="4.0" {% if min_rating=="4.0" %}selected{% endif %}>⭐ 4.0 & Up</option>
+                <option value="4.5" {% if min_rating=="4.5" %}selected{% endif %}>⭐ 4.5 & Up</option>
+            </select>
 
-    <button type="submit" style="margin-bottom: 0;">Filter</button>
-    <a href="{% url 'tutors' %}" style="margin-bottom: 0;">Clear</a>
-</form>
+            <select name="status" style="width: 150px;">
+                <option value="">All Status</option>
+                <option value="Active" {% if status=="Active" %}selected{% endif %}>Active</option>
+                <option value="Inactive" {% if status=="Inactive" %}selected{% endif %}>Inactive</option>
+            </select>
 
-<br>
-    <table border="1" cellpadding="6">
-        <tr>
-            <th>Tutor Name</th>
-            <th>Completed Sessions</th>
-            <th>Avg Rating</th>
-            <th>Status</th>
-        </tr>
-        {% for t in tutors %}
-        <tr>
-            <td>{{ t.student.name }}</td>
-            <td>{{ t.completed_sessions }}</td>
-            <td>{{ t.avg_rating }}</td>
-            <td>{{ t.tutor_status }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4">No tutors found.</td>
-        </tr>
-        {% endfor %}
+            <button type="submit">Filter</button>
+            <a href="{% url 'tutors' %}" class="clear-btn">Reset</a>
+        </form>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tutor Name</th>
+                <th>Completed Sessions</th>
+                <th>Avg Rating</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in tutors %}
+            <tr>
+                <td><strong>{{ t.student.name }}</strong></td>
+                <td>{{ t.completed_sessions }} sessions</td>
+                <td><span style="color: #fbbf24;">★</span> {{ t.avg_rating }} / 5.0</td>
+                <td>
+                    {% if t.tutor_status == "Active" %}
+                    <span class="badge-pill badge-active">Active</span>
+                    {% else %}
+                    <span class="badge-pill badge-inactive">Inactive</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">No tutors matched
+                    your filter criteria.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 </body>
 

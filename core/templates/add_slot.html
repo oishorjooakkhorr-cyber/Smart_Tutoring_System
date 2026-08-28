@@ -1,96 +1,162 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>Post Availability Slot</title>
+    <title>Post Availability Slot - Smart Tutoring System</title>
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-color: #f9fafb;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --card-bg: #ffffff;
+            --bg-color: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-elevated: #334155;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
             margin: 0;
-            padding: 20px 40px;
+            padding: 30px 40px;
+            min-height: 100vh;
         }
 
-        h2, h3 {
-            color: var(--primary-color);
+        h2 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            margin-top: 0;
+            letter-spacing: -0.02em;
         }
 
-        a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
-        }
-
-        a:hover {
-            text-decoration: underline;
-        }
-
-        button, input[type="submit"] {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-
-        button:hover, input[type="submit"]:hover {
-            background-color: var(--primary-hover);
-        }
-
-        input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px 0;
-            display: inline-block;
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            padding: 6px 14px;
+            background-color: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            color: #ffffff;
+            background-color: var(--bg-elevated);
+            border-color: #6366f1;
+            text-decoration: none;
+        }
+
+        .form-card {
+            max-width: 440px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 28px 32px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        input[type="date"],
+        input[type="time"],
+        select {
+            width: 100%;
+            padding: 11px 14px;
+            margin: 6px 0 18px 0;
+            display: block;
+            background-color: #0f172a;
+            color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
             box-sizing: border-box;
             font-family: inherit;
+            font-size: 0.95rem;
+            color-scheme: dark;
+            transition: all 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+            outline: none;
+        }
+
+        select option {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px var(--primary-glow);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+            transform: translateY(-1px);
         }
     </style>
 </head>
+
 <body>
 
-    <h2>Post New Availability Slot</h2>
-    <a href="{% url 'home' %}">← Back to Home</a><br><br>
+    <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+    <h2>➕ Post New Availability Slot</h2>
 
-    <form method="POST" style="max-width: 400px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-        {% csrf_token %}
-        <div>
-            <label>Date:</label><br>
-            <input type="date" name="slot_date" required>
-        </div>
-        <div>
-            <label>Start Time:</label><br>
-            <input type="time" name="start_time" required>
-        </div>
-        <div>
-            <label>End Time:</label><br>
-            <input type="time" name="end_time" required>
-        </div>
-        <div>
-            <label>Mode:</label><br>
-            <select name="mode" required>
-                <option value="Online">Online</option>
-                <option value="In-Person">In-Person</option>
-            </select>
-        </div>
-        <button type="submit">Post Slot</button>
-    </form>
+    <div class="form-card">
+        <form method="POST">
+            {% csrf_token %}
+            <div>
+                <label>Slot Date</label>
+                <input type="date" name="slot_date" required>
+            </div>
+            <div>
+                <label>Start Time</label>
+                <input type="time" name="start_time" required>
+            </div>
+            <div>
+                <label>End Time</label>
+                <input type="time" name="end_time" required>
+            </div>
+            <div>
+                <label>Session Mode</label>
+                <select name="mode" required>
+                    <option value="Online">🌐 Online</option>
+                    <option value="In-Person">🏫 In-Person</option>
+                </select>
+            </div>
+            <button type="submit">Publish Availability Slot</button>
+        </form>
+    </div>
 
 </body>
+
 </html>

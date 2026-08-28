@@ -2,39 +2,144 @@
 <html>
 
 <head>
-    <title>Student Registration</title>
-
-    
-
-
-    
-    
+    <title>Register - Smart Tutoring System</title>
 
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-color: #f9fafb;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --card-bg: #ffffff;
+            --bg-color: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-elevated: #334155;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
             margin: 0;
-            padding: 20px 40px;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        h2, h3 {
-            color: var(--primary-color);
+        .auth-container {
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .auth-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            margin-bottom: 24px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #ffffff;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 11px 14px;
+            margin: 6px 0 16px 0;
+            display: block;
+            background-color: #0f172a;
+            color: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+            outline: none;
+        }
+
+        select option {
+            background-color: #1e293b;
+            color: #f8fafc;
+        }
+
+        .role-box {
+            background-color: #0f172a;
+            padding: 14px 18px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .role-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .role-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #6366f1;
+            cursor: pointer;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px var(--primary-glow);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+            transform: translateY(-1px);
         }
 
         a {
-            color: var(--primary-color);
+            color: #818cf8;
             text-decoration: none;
             font-weight: 500;
         }
@@ -43,110 +148,109 @@
             text-decoration: underline;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: var(--card-bg);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 12px 16px;
             border-radius: 8px;
-            overflow: hidden;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
         }
 
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f3f4f6;
-            font-weight: 600;
-            color: #374151;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover {
-            background-color: #f9fafb;
-        }
-
-        button, input[type="submit"] {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-
-        button:hover, input[type="submit"]:hover {
-            background-color: var(--primary-hover);
-        }
-
-        input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px 0;
-            display: inline-block;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .text-center {
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
 
-    <h2>Register for Smart Tutoring System</h2>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>📝 Student Registration</h2>
 
-    <form method="POST">
-        {% csrf_token %}
-        <div><label>Student ID (SID):</label><br><input type="text" name="sid" required></div><br>
-        <div><label>Full Name:</label><br><input type="text" name="name" required></div><br>
-        <div><label>Email Address:</label><br><input type="email" name="email" required></div><br>
-        <div><label>Phone Number:</label><br><input type="text" name="phone" required></div><br>
-        <div><label>Semester:</label><br><input type="number" name="semester" required></div><br>
+            {% if error %}
+            <div class="alert-error">
+                <strong>Error:</strong> {{ error }}
+            </div>
+            {% endif %}
 
-        <div>
-            <label>Department:</label><br>
-            <select name="department_id" required>
-                {% for dept in departments %}
-                <option value="{{ dept.0 }}">{{ dept.1 }}</option>
-                {% endfor %}
-            </select>
-        </div><br>
+            <form method="POST">
+                {% csrf_token %}
+                <div>
+                    <label>Student ID (SID)</label>
+                    <input type="text" name="sid" value="{{ form_data.sid|default:'' }}"
+                        placeholder="e.g. 20101234 (exact 8 digits)" minlength="8" maxlength="8" pattern="[0-9]{8}"
+                        title="Must be an exact 8-digit number" required>
+                </div>
 
-        <div><label>Password:</label><br><input type="password" name="password" required></div><br>
+                <div>
+                    <label>Full Name</label>
+                    <input type="text" name="name" value="{{ form_data.name|default:'' }}"
+                        placeholder="e.g. Alice Smith" minlength="2" maxlength="100" required>
+                </div>
 
-        <div>
-            <label><strong>Select Role(s):</strong></label><br>
-            <input type="checkbox" name="is_learner" id="learner" checked>
-            <label for="learner">Register as Learner</label><br>
-            
-            <input type="checkbox" name="is_tutor" id="tutor">
-            <label for="tutor">Register as Tutor</label>
-        </div><br>
+                <div>
+                    <label>Email Address</label>
+                    <input type="email" name="email" value="{{ form_data.email|default:'' }}"
+                        placeholder="e.g. alice@example.com" required>
+                </div>
 
-        <button type="submit">Sign Up</button>
-    </form>
+                <div>
+                    <label>Phone Number</label>
+                    <input type="tel" name="phone" value="{{ form_data.phone|default:'' }}"
+                        placeholder="e.g. 01711111111 (10-15 digits)" pattern="^\+?[0-9]{10,15}$"
+                        title="10 to 15 digits" required>
+                </div>
 
-    <br>
-    <p>Already have an account? <a href="{% url 'login' %}">Log in here</a>.</p>
+                <div>
+                    <label>Semester</label>
+                    <input type="number" name="semester" value="{{ form_data.semester|default:'' }}"
+                        placeholder="e.g. 1 to 16" min="1" max="16" required>
+                </div>
+
+                <div>
+                    <label>Department</label>
+                    <select name="department_id" required>
+                        <option value="">-- Select Department --</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.0 }}">{{ dept.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="At least 6 characters" minlength="6" required>
+                </div>
+
+                <div>
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirm_password" placeholder="Re-enter your password" minlength="6"
+                        required>
+                </div>
+
+                <div class="role-box">
+                    <label><strong>Select Role(s):</strong></label>
+                    <div class="role-option">
+                        <input type="checkbox" name="is_learner" id="learner" {% if form_data.is_learner %}checked{% endif %}>
+                        <label for="learner" style="cursor: pointer;">Register as Learner</label>
+                    </div>
+                    <div class="role-option">
+                        <input type="checkbox" name="is_tutor" id="tutor" {% if form_data.is_tutor %}checked{% endif %}>
+                        <label for="tutor" style="cursor: pointer;">Register as Tutor</label>
+                    </div>
+                </div>
+
+                <button type="submit">Sign Up</button>
+            </form>
+
+            <div class="text-center" style="margin-top: 20px; font-size: 0.95rem; color: var(--text-muted);">
+                Already have an account? <a href="{% url 'login' %}">Log in here</a>
+            </div>
+        </div>
+    </div>
 
 </body>
 

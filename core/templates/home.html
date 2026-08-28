@@ -2,149 +2,233 @@
 <html>
 
 <head>
-    <title>Home</title>
-
-    
-
-
-    
-    
+    <title>Smart Tutoring System - Dashboard</title>
 
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-color: #f9fafb;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --card-bg: #ffffff;
+            --bg-color: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-elevated: #334155;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
             margin: 0;
-            padding: 20px 40px;
+            padding: 30px 40px;
+            min-height: 100vh;
         }
 
-        h2, h3 {
-            color: var(--primary-color);
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
         }
 
-        a {
-            color: var(--primary-color);
+        .user-greeting {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #38bdf8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #ffffff;
+            box-shadow: 0 2px 8px var(--primary-glow);
+        }
+
+        h2 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 1.6rem;
+            letter-spacing: -0.02em;
+        }
+
+        .logout-btn {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            padding: 8px 16px;
+            border-radius: 7px;
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .logout-btn:hover {
+            background-color: #ef4444;
+            color: #ffffff;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: var(--card-bg);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
         }
 
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
+        .portal-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .portal-card:hover {
+            border-color: #475569;
+            transform: translateY(-2px);
+        }
+
+        .portal-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-color);
         }
 
-        th {
-            background-color: #f3f4f6;
-            font-weight: 600;
-            color: #374151;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
+        .portal-icon {
+            font-size: 1.3rem;
         }
 
-        tr:last-child td {
-            border-bottom: none;
+        .portal-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        tr:hover {
-            background-color: #f9fafb;
-        }
-
-        button, input[type="submit"] {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-
-        button:hover, input[type="submit"]:hover {
-            background-color: var(--primary-hover);
-        }
-
-        input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px 0;
-            display: inline-block;
+        .portal-links li a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background-color: #0f172a;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: inherit;
+            border-radius: 8px;
+            color: #f1f5f9;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+
+        .portal-links li a:hover {
+            background-color: #1e293b;
+            border-color: #6366f1;
+            color: #818cf8;
+            padding-left: 20px;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+        }
+
+        .portal-links li a .arrow {
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+        }
+
+        .portal-links li a:hover .arrow {
+            color: #818cf8;
+            transform: translateX(3px);
         }
     </style>
 </head>
 
 <body>
-    <h2>Welcome, {{ user_name }}!</h2>
-    <a href="{% url 'logout' %}">Logout</a>
-    <hr>
-    
-    {% if role == "admin" %}
-    <h3>Admin Portal</h3>
-    <ul>
-        <li><a href="{% url 'students' %}">View All Students</a></li>
-        <li><a href="{% url 'learners' %}">View All Learners</a></li>
-        <li><a href="{% url 'warnings' %}" style="color: #dc2626;">View Warnings (Moderation)</a></li>
-    </ul>
-    <hr>
-    {% endif %}
+    <div class="header">
+        <div class="user-greeting">
+            <div class="avatar">{{ user_name|slice:":1"|upper }}</div>
+            <div>
+                <h2>Welcome, {{ user_name }}!</h2>
+                <span style="color: var(--text-muted); font-size: 0.85rem;">Role: {{ role|title }}</span>
+            </div>
+        </div>
+        <a href="{% url 'logout' %}" class="logout-btn">Logout ➔</a>
+    </div>
 
-    {% if is_learner or role == "admin" %}
-    <h3>Learner Portal</h3>
-    <ul>
-        <li><a href="{% url 'tutors' %}">Find Tutors</a></li>
-        <li><a href="{% url 'skills' %}">View Skills</a></li>
-        <li><a href="{% url 'slots' %}">Book Available Slots</a></li>
-        <li><a href="{% url 'bookings' %}">My Sessions (Learner)</a></li>
-    </ul>
-    {% endif %}
+    <div class="grid">
+        {% if role == "admin" %}
+        <div class="portal-card" style="border-top: 3px solid #ef4444;">
+            <div class="portal-title">
+                <span class="portal-icon">🛡️</span> Admin Portal
+            </div>
+            <ul class="portal-links">
+                <li><a href="{% url 'students' %}"><span>👥 View All Students</span> <span class="arrow">→</span></a>
+                </li>
+                <li><a href="{% url 'learners' %}"><span>📚 View All Learners</span> <span class="arrow">→</span></a>
+                </li>
+                <li><a href="{% url 'warnings' %}"
+                        style="border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;"><span>⚠️ Warnings &
+                            Moderation</span> <span class="arrow">→</span></a></li>
+            </ul>
+        </div>
+        {% endif %}
 
-    {% if is_tutor or role == "admin" %}
-    <hr>
-    <h3>Tutor Portal</h3>
-    <ul>
-        <li><a href="{% url 'add_slot' %}">Post New Availability Slot</a></li>
-        <li><a href="{% url 'bookings' %}">My Teaching Sessions</a></li>
-        <li><a href="{% url 'ratings' %}">View My Ratings</a></li>
-        <li><a href="{% url 'badges' %}">View Badges</a></li>
-    </ul>
-    {% endif %}
+        {% if is_learner or role == "admin" %}
+        <div class="portal-card" style="border-top: 3px solid #38bdf8;">
+            <div class="portal-title">
+                <span class="portal-icon">🎓</span> Learner Portal
+            </div>
+            <ul class="portal-links">
+                <li><a href="{% url 'tutors' %}"><span>🔍 Find Tutors</span> <span class="arrow">→</span></a></li>
+                <li><a href="{% url 'skills' %}"><span>💡 Explore Skills</span> <span class="arrow">→</span></a></li>
+                <li><a href="{% url 'slots' %}"><span>📅 Book Available Slots</span> <span class="arrow">→</span></a>
+                </li>
+                <li><a href="{% url 'bookings' %}"><span>📖 My Booked Sessions</span> <span class="arrow">→</span></a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if is_tutor or role == "admin" %}
+        <div class="portal-card" style="border-top: 3px solid #6366f1;">
+            <div class="portal-title">
+                <span class="portal-icon">👨‍🏫</span> Tutor Portal
+            </div>
+            <ul class="portal-links">
+                <li><a href="{% url 'add_slot' %}"><span>➕ Post New Availability Slot</span> <span
+                            class="arrow">→</span></a></li>
+                <li><a href="{% url 'bookings' %}"><span>🧑‍🏫 My Teaching Sessions</span> <span
+                            class="arrow">→</span></a></li>
+                <li><a href="{% url 'ratings' %}"><span>⭐ View My Ratings & Reviews</span> <span
+                            class="arrow">→</span></a></li>
+                <li><a href="{% url 'badges' %}"><span>🏅 View Badges</span> <span class="arrow">→</span></a></li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
 
 </body>
 

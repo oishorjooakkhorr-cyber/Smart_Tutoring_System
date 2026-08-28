@@ -1,111 +1,94 @@
+<!DOCTYPE html>
+<html>
 
+<head>
+    <title>Select Role - Smart Tutoring System</title>
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-color: #f9fafb;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --card-bg: #ffffff;
+            --bg-color: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-elevated: #334155;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
             margin: 0;
-            padding: 20px 40px;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        h2, h3 {
-            color: var(--primary-color);
+        .select-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 36px 40px;
+            text-align: center;
+            max-width: 480px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
 
-        a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 500;
+        h2 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 24px;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: var(--card-bg);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            background-color: #f3f4f6;
-            font-weight: 600;
-            color: #374151;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover {
-            background-color: #f9fafb;
-        }
-
-        button, input[type="submit"] {
-            background-color: var(--primary-color);
+        .btn-role {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
+            padding: 14px 24px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-
-        button:hover, input[type="submit"]:hover {
-            background-color: var(--primary-hover);
-        }
-
-        input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px 0;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px var(--primary-glow);
             display: inline-block;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: inherit;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+
+        .btn-role:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+            transform: translateY(-2px);
+            color: #ffffff;
+            text-decoration: none;
         }
     </style>
+</head>
 
+<body>
+    <div class="select-card">
+        <h2>👋 Welcome! Are you here to learn or teach?</h2>
+        <div class="btn-group">
+            <a href="/learners/" class="btn-role">🎓 I am a Learner</a>
+            <a href="/tutors/" class="btn-role">👨‍🏫 I am a Tutor</a>
+        </div>
+    </div>
+</body>
 
-    
-    
-
-
-
-    
-
-<h2>Welcome! Are you here to learn or teach?</h2>
-<a href="/learners/"><button>I am a Learner</button></a>
-<a href="/tutors/"><button>I am a Tutor</button></a>
+</html>

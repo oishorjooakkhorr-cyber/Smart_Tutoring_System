@@ -2,144 +2,172 @@
 <html>
 
 <head>
-    <title>Available Slots</title>
-
-    
-
-
-    
-    
+    <title>Available Slots - Smart Tutoring System</title>
 
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-color: #f9fafb;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --card-bg: #ffffff;
+            --bg-color: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-elevated: #334155;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
             margin: 0;
-            padding: 20px 40px;
+            padding: 30px 40px;
+            min-height: 100vh;
         }
 
-        h2, h3 {
-            color: var(--primary-color);
+        h2 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            margin-top: 0;
+            letter-spacing: -0.02em;
         }
 
-        a {
-            color: var(--primary-color);
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            padding: 6px 14px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             text-decoration: none;
-            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .back-link:hover {
+            color: #ffffff;
+            background-color: var(--bg-elevated);
+            border-color: #6366f1;
+            text-decoration: none;
         }
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             margin: 20px 0;
-            background-color: var(--card-bg);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
             overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
         }
 
-        th, td {
-            padding: 12px 15px;
+        th,
+        td {
+            padding: 14px 18px;
             text-align: left;
-            border-bottom: 1px solid var(--border-color);
         }
 
         th {
-            background-color: #f3f4f6;
+            background-color: #162032;
             font-weight: 600;
-            color: #374151;
+            color: #94a3b8;
             text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            color: #f1f5f9;
+            border-bottom: 1px solid #283548;
+            font-size: 0.95rem;
         }
 
         tr:last-child td {
             border-bottom: none;
         }
 
-        tr:hover {
-            background-color: #f9fafb;
+        tr:hover td {
+            background-color: #243248;
         }
 
-        button, input[type="submit"] {
-            background-color: var(--primary-color);
+        button {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 8px 16px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: background-color 0.2s;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 6px var(--primary-glow);
+            transition: all 0.2s ease;
         }
 
-        button:hover, input[type="submit"]:hover {
-            background-color: var(--primary-hover);
+        button:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.5);
         }
 
-        input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px 0;
+        .badge-mode {
             display: inline-block;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            padding: 3px 10px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background-color: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
         }
     </style>
 </head>
 
 <body>
-    <h2>Available Slots</h2>
-    <a href="{% url 'home' %}">← Back to Home</a><br><br>
-    <table border="1" cellpadding="6">
-        <tr>
-            <th>Tutor</th>
-            <th>Slot No</th>
-            <th>Date</th>
-            <th>Start Time</th>
-            <th>End Time</th>
-            <th>Mode</th>
-            <th>Action</th> <!-- 1. ADDED THIS HEADER -->
-        </tr>
-        {% for sl in slots %}
-        <tr>
-            <td>{{ sl.tutor.student.name }}</td>
-            <td>{{ sl.slot_no }}</td>
-            <td>{{ sl.date }}</td>
-            <td>{{ sl.start_time }}</td>
-            <td>{{ sl.end_time }}</td>
-            <td>{{ sl.mode }}</td>
-            <td> <!-- 2. ADDED THIS BUTTON CELL HERE -->
-                <a href="{% url 'book_slot' sl.id %}"><button>Book Slot</button></a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="7">No slots available.</td> <!-- Updated colspan to 7 -->
-        </tr>
-        {% endfor %}
+    <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+    <h2>📅 Available Slots to Book</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tutor</th>
+                <th>Slot No</th>
+                <th>Date</th>
+                <th>Time Window</th>
+                <th>Mode</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sl in slots %}
+            <tr>
+                <td><strong>{{ sl.tutor.student.name }}</strong></td>
+                <td>Slot #{{ sl.slot_no }}</td>
+                <td>{{ sl.date }}</td>
+                <td>{{ sl.start_time }} – {{ sl.end_time }}</td>
+                <td><span class="badge-mode">{{ sl.mode }}</span></td>
+                <td>
+                    <a href="{% url 'book_slot' sl.id %}"><button>Book Slot</button></a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">No available
+                    tutoring slots found. Check back soon!</td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 </body>
 

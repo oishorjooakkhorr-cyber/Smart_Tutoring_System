@@ -21,6 +21,9 @@ def dictfetchone(cursor):
     return None
 
 
+import re
+
+
 def login_view(request):
     # Check if custom student session is already active
     if "user_email" in request.session:
@@ -31,10 +34,12 @@ def login_view(request):
         is_admin_login = request.POST.get("is_admin_login")
 
         if is_admin_login:
-            admin_id = request.POST.get("admin_id")
-            password = request.POST.get("password")
+            admin_id = (request.POST.get("admin_id") or "").strip()
+            password = (request.POST.get("password") or "").strip()
 
-            if admin_id == "cse370" and password == "cse370":
+            if not admin_id or not password:
+                error = "Admin ID and Password cannot be empty."
+            elif admin_id == "cse370" and password == "cse370":
                 request.session["user_email"] = "admin"
                 request.session["user_name"] = "Administrator"
                 request.session["role"] = "admin"
@@ -42,103 +47,166 @@ def login_view(request):
             else:
                 error = "Invalid Admin ID or password"
         else:
-            email = request.POST.get("email")
-            password = request.POST.get("password")
+            email = (request.POST.get("email") or "").strip()
+            password = request.POST.get("password") or ""
 
-            # Query custom core_student table directly
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT sid, name, email, password FROM core_student WHERE email = %s", [email])
-                student = cursor.fetchone()
+            if not email or not password:
+                error = "Email and Password cannot be empty."
+            else:
+                # Query custom core_student table directly
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT sid, name, email, password FROM core_student WHERE email = %s", [email])
+                    student = cursor.fetchone()
 
-                if student and student[3] == password:  # Validate email and password
-                    request.session["user_sid"] = student[0]
-                    request.session["user_name"] = student[1]
-                    request.session["user_email"] = student[2]  # Store in session
-                    request.session["role"] = "student"
-                    
-                    # Check if they are a learner
-                    cursor.execute("SELECT 1 FROM core_learner WHERE student_id = %s", [student[0]])
-                    request.session["is_learner"] = True if cursor.fetchone() else False
-                    
-                    # Check if they are a tutor
-                    cursor.execute("SELECT 1 FROM core_tutor WHERE student_id = %s", [student[0]])
-                    request.session["is_tutor"] = True if cursor.fetchone() else False
-                    
-                    return redirect("home")
-                else:
-                    error = "Invalid student email or password"
+                    if student and student[3] == password:  # Validate email and password
+                        request.session["user_sid"] = student[0]
+                        request.session["user_name"] = student[1]
+                        request.session["user_email"] = student[2]  # Store in session
+                        request.session["role"] = "student"
+                        
+                        # Check if they are a learner
+                        cursor.execute("SELECT 1 FROM core_learner WHERE student_id = %s", [student[0]])
+                        request.session["is_learner"] = True if cursor.fetchone() else False
+                        
+                        # Check if they are a tutor
+                        cursor.execute("SELECT 1 FROM core_tutor WHERE student_id = %s", [student[0]])
+                        request.session["is_tutor"] = True if cursor.fetchone() else False
+                        
+                        return redirect("home")
+                    else:
+                        error = "Invalid student email or password"
 
     return render(request, "login.html", {"error": error})
 
 
-
-from django.shortcuts import render, redirect
-from django.db import connection
-
-def dictfetchall(cursor):
-    """Return all rows from a cursor as a dict"""
-    columns = [col[0] for col in cursor.description]
-    return [dict(zip(columns, row)) for row in cursor.fetchall()]
-
 def signup_view(request):
-    if request.method == "POST":
-        sid = request.POST.get("sid")
-        name = request.POST.get("name")
-        email = request.POST.get("email")
-        phone = request.POST.get("phone")
-        semester = request.POST.get("semester")
-        department_id = request.POST.get("department_id")
-        password = request.POST.get("password")
-
-        is_learner = request.POST.get("is_learner")
-        is_tutor = request.POST.get("is_tutor")
-
-        slot_date = request.POST.get("slot_date")
-        start_time = request.POST.get("start_time")
-        end_time = request.POST.get("end_time")
-        mode = request.POST.get("mode")
-
-        with connection.cursor() as cursor:
-            # 1. Insert into core_student
-            cursor.execute("""
-                INSERT INTO core_student (sid, name, email, phone, semester, department_id, password)
-                VALUES (%s, %s, %s, %s, %s, %s, %s);
-            """, [sid, name, email, phone, semester, department_id, password])
-
-            # 2. Add to core_learner if checked
-            if is_learner:
-                cursor.execute(
-                    "INSERT INTO core_learner (student_id, learner_level) VALUES (%s, %s);", 
-                    [sid, "Beginner"]
-                )
-
-            # 3. Add to core_tutor
-            if is_tutor:
-                cursor.execute(
-                    """
-                    INSERT INTO core_tutor (student_id, completed_sessions, avg_rating, tutor_status) 
-                    VALUES (%s, %s, %s, %s);
-                    """, 
-                    [sid, 0, 0.0, "Active"]
-                )
-
-        # AUTO-LOGIN: Store active user credentials in session
-        request.session["user_sid"] = sid
-        request.session["user_email"] = email
-        request.session["user_name"] = name
-        request.session["role"] = "student"
-        request.session["is_learner"] = bool(is_learner)
-        request.session["is_tutor"] = bool(is_tutor)
-
-        # Redirect straight into the app home page
-        return redirect("home")
+    error = None
+    form_data = {
+        "is_learner": True,
+        "is_tutor": False
+    }
 
     # Fetch departments dropdown list
     with connection.cursor() as cursor:
         cursor.execute("SELECT dept_id, dept_name FROM core_department;")
         departments = cursor.fetchall()
 
-    return render(request, "signup.html", {"departments": departments})
+    if request.method == "POST":
+        sid = (request.POST.get("sid") or "").strip()
+        name = (request.POST.get("name") or "").strip()
+        email = (request.POST.get("email") or "").strip()
+        phone = (request.POST.get("phone") or "").strip()
+        semester = (request.POST.get("semester") or "").strip()
+        department_id = (request.POST.get("department_id") or "").strip()
+        password = request.POST.get("password") or ""
+        confirm_password = request.POST.get("confirm_password") or ""
+
+        is_learner = bool(request.POST.get("is_learner"))
+        is_tutor = bool(request.POST.get("is_tutor"))
+
+        form_data = {
+            "sid": sid,
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "semester": semester,
+            "department_id": department_id,
+            "is_learner": is_learner,
+            "is_tutor": is_tutor,
+        }
+
+        # 1. Required Fields Empty Check
+        if not sid or not name or not email or not phone or not semester or not department_id or not password:
+            error = "All fields are required and cannot be left blank."
+
+        # 2. Role selection check
+        elif not is_learner and not is_tutor:
+            error = "Please select at least one role: Learner, Tutor, or both."
+
+        # 3. Student ID (SID) length & character validation
+        elif len(sid) < 4 or len(sid) > 20 or not sid.isalnum():
+            error = "Student ID must be between 4 and 20 alphanumeric characters (letters/numbers only)."
+
+        # 4. Full Name length validation
+        elif len(name) < 2 or len(name) > 100:
+            error = "Full name must be between 2 and 100 characters."
+
+        # 5. Email format validation
+        elif not re.match(r"^[\w\.-]+@[\w\.-]+\.\w+$", email):
+            error = "Please provide a valid email address (e.g., student@example.com)."
+
+        # 6. Phone number format & length validation (10 to 15 digits)
+        elif not re.match(r"^\+?[0-9]{10,15}$", phone):
+            error = "Phone number must be between 10 and 15 digits (e.g. 01711111111)."
+
+        # 7. Semester numeric range validation (1 to 16)
+        elif not semester.isdigit() or int(semester) < 1 or int(semester) > 16:
+            error = "Semester must be a valid number between 1 and 16."
+
+        # 8. Password minimum length validation
+        elif len(password) < 6:
+            error = "Password is too short. It must be at least 6 characters long."
+
+        # 9. Password confirmation match check
+        elif confirm_password and password != confirm_password:
+            error = "Passwords do not match. Please re-enter your password."
+
+        else:
+            with connection.cursor() as cursor:
+                # Duplicate SID check
+                cursor.execute("SELECT 1 FROM core_student WHERE sid = %s", [sid])
+                if cursor.fetchone():
+                    error = f"A student with ID '{sid}' is already registered."
+
+                # Duplicate Email check
+                if not error:
+                    cursor.execute("SELECT 1 FROM core_student WHERE email = %s", [email])
+                    if cursor.fetchone():
+                        error = f"The email '{email}' is already in use by another account."
+
+                # Duplicate Phone check
+                if not error:
+                    cursor.execute("SELECT 1 FROM core_student WHERE phone = %s", [phone])
+                    if cursor.fetchone():
+                        error = f"The phone number '{phone}' is already registered."
+
+                # If all constraint checks pass, perform insertion
+                if not error:
+                    cursor.execute("""
+                        INSERT INTO core_student (sid, name, email, phone, semester, department_id, password)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s);
+                    """, [sid, name, email, phone, int(semester), department_id, password])
+
+                    if is_learner:
+                        cursor.execute(
+                            "INSERT INTO core_learner (student_id, learner_level) VALUES (%s, %s);", 
+                            [sid, "Beginner"]
+                        )
+
+                    if is_tutor:
+                        cursor.execute(
+                            """
+                            INSERT INTO core_tutor (student_id, completed_sessions, avg_rating, tutor_status) 
+                            VALUES (%s, %s, %s, %s);
+                            """, 
+                            [sid, 0, 0.0, "Active"]
+                        )
+
+                    # AUTO-LOGIN: Store active user credentials in session
+                    request.session["user_sid"] = sid
+                    request.session["user_email"] = email
+                    request.session["user_name"] = name
+                    request.session["role"] = "student"
+                    request.session["is_learner"] = is_learner
+                    request.session["is_tutor"] = is_tutor
+
+                    return redirect("home")
+
+    return render(request, "signup.html", {
+        "departments": departments,
+        "error": error,
+        "form_data": form_data
+    })
 
 
 
@@ -274,14 +342,28 @@ def skills(request):
 
 
 def slots(request):
+    active_email = request.session.get("user_email")
+    active_sid = request.session.get("user_sid")
+    role = request.session.get("role")
+
+    if not active_email:
+        return redirect("login")
+
     query = """
         SELECT slot.*, s.name AS student_name
         FROM core_availableslot slot
         JOIN core_tutor t ON slot.tutor_id = t.student_id
         JOIN core_student s ON t.student_id = s.sid
     """
+    params = []
+
+    # Exclude current user's own slots so a tutor cannot book their own slot as a learner
+    if role != "admin" and active_sid:
+        query += " WHERE slot.tutor_id != %s"
+        params.append(active_sid)
+
     with connection.cursor() as cursor:
-        cursor.execute(query)
+        cursor.execute(query, params)
         data = dictfetchall(cursor)
 
     for row in data:
@@ -312,7 +394,7 @@ def add_slot(request):
                 VALUES (%s, %s, %s, %s, %s, %s)
             """, [tutor_id, next_slot_no, slot_date, start_time, end_time, mode])
             
-        return redirect("slots")
+        return redirect("home")
         
     return render(request, "add_slot.html")
 
@@ -325,6 +407,8 @@ def bookings(request):
     if not active_email:
         return redirect("login")
 
+    filter_type = request.GET.get("type")  # "learner" or "tutor"
+
     query = """
         SELECT b.*, 
                ls.name AS learner_name, 
@@ -332,22 +416,43 @@ def bookings(request):
                COALESCE(slot.slot_no, 0) AS slot_no, 
                slot.start_time, 
                slot.end_time, 
-               slot.mode
+               slot.mode,
+               r.rating AS given_rating,
+               r.comment AS given_comment
         FROM core_booking b
         JOIN core_learner l ON b.learner_id = l.student_id
         JOIN core_student ls ON l.student_id = ls.sid
         JOIN core_tutor t ON b.tutor_id = t.student_id
         JOIN core_student ts ON t.student_id = ts.sid
         LEFT JOIN core_availableslot slot ON b.slot_id = slot.id
+        LEFT JOIN core_ratings r ON b.booking_id = r.booking_id
     """
     
     params = []
-    # If not admin, only show bookings where the current user is either the learner or the tutor
-    if role != "admin":
-        query += " WHERE b.learner_id = %s OR b.tutor_id = %s"
-        params.extend([active_sid, active_sid])
+    where_clauses = []
 
-    query += " ORDER BY b.booking_id ASC"
+    if role != "admin":
+        if filter_type == "learner":
+            where_clauses.append("b.learner_id = %s")
+            params.append(active_sid)
+        elif filter_type == "tutor":
+            where_clauses.append("b.tutor_id = %s")
+            params.append(active_sid)
+        else:
+            where_clauses.append("(b.learner_id = %s OR b.tutor_id = %s)")
+            params.extend([active_sid, active_sid])
+    else:
+        if filter_type == "learner" and active_sid:
+            where_clauses.append("b.learner_id = %s")
+            params.append(active_sid)
+        elif filter_type == "tutor" and active_sid:
+            where_clauses.append("b.tutor_id = %s")
+            params.append(active_sid)
+
+    if where_clauses:
+        query += " WHERE " + " AND ".join(where_clauses)
+
+    query += " ORDER BY b.booking_id DESC"
 
     with connection.cursor() as cursor:
         cursor.execute(query, params)
@@ -362,11 +467,29 @@ def bookings(request):
             "end_time": row["end_time"],
             "mode": row["mode"],
         }
+        # Only the learner who took the session (or admin) can rate it
+        row["can_rate"] = (role == "admin") or (active_sid and str(row["learner_id"]) == str(active_sid))
+        row["is_tutor_of_session"] = bool(active_sid and str(row["tutor_id"]) == str(active_sid))
 
-    return render(request, "bookings.html", {"bookings": data, "role": role})
+    return render(
+        request, 
+        "bookings.html", 
+        {
+            "bookings": data, 
+            "role": role, 
+            "filter_type": filter_type
+        }
+    )
 
 
 def ratings(request):
+    active_email = request.session.get("user_email")
+    active_sid = request.session.get("user_sid")
+    is_tutor = request.session.get("is_tutor", False)
+
+    if not active_email:
+        return redirect("login")
+
     query = """
         SELECT r.*, 
                ls.name AS learner_name, 
@@ -376,6 +499,7 @@ def ratings(request):
         JOIN core_student ls ON l.student_id = ls.sid
         JOIN core_tutor t ON r.tutor_id = t.student_id
         JOIN core_student ts ON t.student_id = ts.sid
+        ORDER BY r.rating_id DESC
     """
     with connection.cursor() as cursor:
         cursor.execute(query)
@@ -385,7 +509,20 @@ def ratings(request):
         row["learner"] = {"student": {"name": row["learner_name"]}}
         row["tutor"] = {"student": {"name": row["tutor_name"]}}
 
-    return render(request, "ratings.html", {"ratings": data})
+    # Filter ratings specifically received by the currently logged-in tutor
+    my_ratings = []
+    if is_tutor and active_sid:
+        my_ratings = [r for r in data if str(r.get("tutor_id")) == str(active_sid)]
+
+    return render(
+        request, 
+        "ratings.html", 
+        {
+            "ratings": data, 
+            "my_ratings": my_ratings, 
+            "is_tutor": is_tutor
+        }
+    )
 
 
 def badges(request):
@@ -398,6 +535,10 @@ def badges(request):
 
 def book_slot(request, slot_id):
     active_email = request.session.get("user_email")
+    active_sid = request.session.get("user_sid")
+
+    if not active_email:
+        return redirect("login")
 
     with connection.cursor() as cursor:
         cursor.execute(
@@ -433,6 +574,14 @@ def book_slot(request, slot_id):
             learner = dictfetchone(cursor)
 
         learner_id = learner["student_id"] if learner else None
+
+    # Check if the user is attempting to book their own slot
+    if (active_sid and str(slot["tutor_id"]) == str(active_sid)) or (learner_id and str(slot["tutor_id"]) == str(learner_id)):
+        return render(request, "book_slot.html", {
+            "slot": slot,
+            "error": "You cannot book your own availability slot.",
+            "is_self_slot": True
+        })
 
     if request.method == "POST":
         with connection.cursor() as cursor:
@@ -491,14 +640,21 @@ def book_slot(request, slot_id):
 
 def rate_booking(request, booking_id):
     active_email = request.session.get("user_email")
+    active_sid = request.session.get("user_sid")
+    role = request.session.get("role")
+
     if not active_email:
         return redirect("login")
 
     with connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT b.*
+            SELECT b.*, ts.name AS tutor_name, ls.name AS learner_name
             FROM core_booking b
+            JOIN core_tutor t ON b.tutor_id = t.student_id
+            JOIN core_student ts ON t.student_id = ts.sid
+            JOIN core_learner l ON b.learner_id = l.student_id
+            JOIN core_student ls ON l.student_id = ls.sid
             WHERE b.booking_id = %s
             """,
             [booking_id],
@@ -507,6 +663,22 @@ def rate_booking(request, booking_id):
 
         if not booking:
             raise Http404("Booking does not exist")
+
+    # LOGICAL & SECURITY CHECK:
+    # A tutor cannot rate their own teaching session! Only the learner who attended (or admin) can rate.
+    if role != "admin" and active_sid:
+        if str(booking["tutor_id"]) == str(active_sid):
+            return render(request, "rate_booking.html", {
+                "booking": booking,
+                "error": "Tutors cannot rate their own teaching sessions. Only learners who attended the session can submit ratings.",
+                "cannot_rate": True
+            })
+        if str(booking["learner_id"]) != str(active_sid):
+            return render(request, "rate_booking.html", {
+                "booking": booking,
+                "error": "You were not the learner for this session and cannot rate it.",
+                "cannot_rate": True
+            })
 
     if request.method == "POST":
         rating = request.POST.get("rating")

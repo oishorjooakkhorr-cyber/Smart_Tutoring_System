@@ -2,131 +2,174 @@
 <html>
 
 <head>
-    <title>Book Slot</title>
-
-    
-
-
-    
-    
+    <title>Confirm Booking - Smart Tutoring System</title>
 
     <style>
         :root {
-            --primary-color: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg-color: #f9fafb;
-            --text-color: #1f2937;
-            --border-color: #e5e7eb;
-            --card-bg: #ffffff;
+            --bg-color: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-elevated: #334155;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
             margin: 0;
-            padding: 20px 40px;
+            padding: 30px 40px;
+            min-height: 100vh;
         }
 
-        h2, h3 {
-            color: var(--primary-color);
+        h2 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            margin-top: 0;
+            letter-spacing: -0.02em;
         }
 
-        a {
-            color: var(--primary-color);
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+            padding: 6px 14px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
             text-decoration: none;
-            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .back-link:hover {
+            color: #ffffff;
+            background-color: var(--bg-elevated);
+            border-color: #6366f1;
+            text-decoration: none;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: var(--card-bg);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
+        .booking-card {
+            max-width: 480px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 28px 32px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
         }
 
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
             border-bottom: 1px solid var(--border-color);
         }
 
-        th {
-            background-color: #f3f4f6;
+        .detail-label {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .detail-value {
+            color: #ffffff;
             font-weight: 600;
-            color: #374151;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
         }
 
-        tr:last-child td {
-            border-bottom: none;
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 1px solid #ef4444;
+            color: #fca5a5;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
         }
 
-        tr:hover {
-            background-color: #f9fafb;
-        }
-
-        button, input[type="submit"] {
-            background-color: var(--primary-color);
+        button {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 6px;
+            padding: 12px 22px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px var(--primary-glow);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45);
+            transform: translateY(-1px);
+        }
+
+        .cancel-btn {
+            color: #94a3b8;
+            padding: 10px 18px;
+            text-decoration: none;
             font-weight: 500;
-            transition: background-color 0.2s;
+            margin-left: 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
 
-        button:hover, input[type="submit"]:hover {
-            background-color: var(--primary-hover);
-        }
-
-        input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="time"], input[type="date"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 16px 0;
-            display: inline-block;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
+        .cancel-btn:hover {
+            color: #ffffff;
+            background-color: var(--bg-elevated);
+            text-decoration: none;
         }
     </style>
 </head>
 
 <body>
-    <h2>Confirm Booking</h2>
-    {% if error %}
-    <div style="background-color: #fee2e2; color: #991b1b; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #f87171;">
-        <strong>Error:</strong> {{ error }}
-    </div>
-    {% endif %}
-    <p><strong>Tutor:</strong> {{ slot.tutor.student.name }}</p>
-    <p><strong>Date:</strong> {{ slot.date }}</p>
-    <p><strong>Time:</strong> {{ slot.start_time }} - {{ slot.end_time }}</p>
-    <p><strong>Mode:</strong> {{ slot.mode }}</p>
+    <a href="{% url 'slots' %}" class="back-link">← Back to Available Slots</a>
+    <h2>🔖 Confirm Booking</h2>
 
-    <form method="POST">
-        {% csrf_token %}
-        <button type="submit">Confirm & Book</button>
-        <a href="{% url 'slots' %}">Cancel</a>
-    </form>
+    <div class="booking-card">
+        {% if error %}
+        <div class="alert-error">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="detail-row">
+            <span class="detail-label">Tutor</span>
+            <span class="detail-value">{{ slot.tutor.student.name }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Date</span>
+            <span class="detail-value">{{ slot.date }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Time Window</span>
+            <span class="detail-value">{{ slot.start_time }} – {{ slot.end_time }}</span>
+        </div>
+        <div class="detail-row" style="margin-bottom: 24px;">
+            <span class="detail-label">Session Mode</span>
+            <span class="detail-value">{{ slot.mode }}</span>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            {% if not is_self_slot %}
+            <button type="submit">Confirm & Book Session</button>
+            {% endif %}
+            <a href="{% url 'slots' %}" class="cancel-btn">Cancel</a>
+        </form>
+    </div>
 </body>
 
 </html>

@@ -79,7 +79,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'Smart_Tutoring_System_db',
         'USER': 'root',
-        'PASSWORD': 'cse370**',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '3306',
     }
