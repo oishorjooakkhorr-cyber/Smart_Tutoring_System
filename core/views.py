@@ -227,26 +227,6 @@ def home(request):
     })
 
 
-def students(request):
-    # Enforce session and admin check
-    if request.session.get("role") != "admin":
-        return redirect("home")
-
-    # Joined ON s.department_id = d.dept_id
-    query = """
-        SELECT s.sid, s.name, s.email, s.phone, s.semester, s.password, d.dept_name 
-        FROM core_student s
-        JOIN core_department d ON s.department_id = d.dept_id;
-    """
-    with connection.cursor() as cursor:
-        cursor.execute(query)
-        data = dictfetchall(cursor)
-
-    # Reconstruct nested structure for template rendering
-    for row in data:
-        row["department"] = {"dept_name": row["dept_name"]}
-
-    return render(request, "students.html", {"students": data})
 
 
 def tutors(request):
