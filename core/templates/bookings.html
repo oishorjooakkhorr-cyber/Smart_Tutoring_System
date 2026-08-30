@@ -192,7 +192,13 @@
                     {% endif %}
                 </td>
                 <td>
+                    {% if b.given_rating %}
+                    <span style="color: #34d399; font-weight: 500;">Already rated: ⭐ {{ b.given_rating }}/5</span>
+                    {% elif b.can_rate %}
                     <a href="{% url 'rate_booking' b.booking_id %}" class="btn-rate">⭐ Rate</a>
+                    {% else %}
+                    <span style="color: var(--text-muted); font-size: 0.9em;">(Learner only)</span>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}
