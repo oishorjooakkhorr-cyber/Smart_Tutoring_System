@@ -500,7 +500,8 @@ def ratings(request):
         {
             "ratings": data, 
             "my_ratings": my_ratings, 
-            "is_tutor": is_tutor
+            "is_tutor": is_tutor,
+            "role": request.session.get("role")
         }
     )
 
@@ -711,3 +712,21 @@ def warnings_view(request):
         data = dictfetchall(cursor)
 
     return render(request, "warnings.html", {"warnings": data})
+def delete_slot(request, slot_id):
+    if request.session.get("role") != "admin":
+        return redirect("home")
+    
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM core_booking WHERE slot_id = %s", [slot_id])
+        cursor.execute("DELETE FROM core_availableslot WHERE id = %s", [slot_id])
+    
+    return redirect("slots")
+
+def delete_rating(request, rating_id):
+    if request.session.get("role") != "admin":
+        return redirect("home")
+    
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM core_ratings WHERE rating_id = %s", [rating_id])
+    
+    return redirect("ratings")

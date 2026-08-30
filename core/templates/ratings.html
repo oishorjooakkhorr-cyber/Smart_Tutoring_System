@@ -185,6 +185,9 @@
                 <th>Tutor</th>
                 <th>Rating Score</th>
                 <th>Feedback Comment</th>
+                {% if role == 'admin' %}
+                <th>Actions</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -195,6 +198,13 @@
                 <td><strong>{{ r.tutor.student.name }}</strong></td>
                 <td><span style="color: #fbbf24;">⭐</span> {{ r.rating }} / 5</td>
                 <td>"{{ r.comment }}"</td>
+                {% if role == 'admin' %}
+                <td>
+                    <a href="{% url 'delete_rating' r.rating_id %}" style="text-decoration: none;">
+                        <button style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer;">🗑️ Delete</button>
+                    </a>
+                </td>
+                {% endif %}
             </tr>
             {% empty %}
             <tr>

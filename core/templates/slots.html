@@ -159,6 +159,11 @@
                 <td><span class="badge-mode">{{ sl.mode }}</span></td>
                 <td>
                     <a href="{% url 'book_slot' sl.id %}"><button>Book Slot</button></a>
+                    {% if role == 'admin' %}
+                    <a href="{% url 'delete_slot' sl.id %}" style="margin-left: 10px; text-decoration: none;">
+                        <button style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); box-shadow: 0 2px 6px rgba(239,68,68,0.4);">🗑️ Delete</button>
+                    </a>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}
