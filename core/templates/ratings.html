@@ -152,7 +152,6 @@
                     <th>Learner</th>
                     <th>Rating Score</th>
                     <th>Feedback Comment</th>
-                    <th>Moderation Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -160,20 +159,13 @@
                 <tr>
                     <td>#{{ r.rating_id }}</td>
                     <td><strong>{{ r.learner.student.name }}</strong></td>
-                    <td><span style="color: #fbbf24; font-size: 1.1rem;">★</span> <strong>{{ r.rating }} / 5</strong>
+                    <td><span style="color: #fbbf24; font-size: 1.1rem;">⭐</span> <strong>{{ r.rating }} / 5</strong>
                     </td>
                     <td>"{{ r.comment }}"</td>
-                    <td>
-                        {% if r.warning %}
-                        <span class="badge-pill badge-warning">Flagged / Warning</span>
-                        {% else %}
-                        <span class="badge-pill badge-ok">Normal</span>
-                        {% endif %}
-                    </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 25px;">You haven't
+                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 25px;">You haven't
                         received any learner feedback ratings yet.</td>
                 </tr>
                 {% endfor %}
@@ -193,28 +185,20 @@
                 <th>Tutor</th>
                 <th>Rating Score</th>
                 <th>Feedback Comment</th>
-                <th>Moderation</th>
             </tr>
         </thead>
         <tbody>
             {% for r in ratings %}
             <tr>
                 <td>#{{ r.rating_id }}</td>
-                <td>{{ r.learner.student.name }}</td>
+                <td><strong>{{ r.learner.student.name }}</strong></td>
                 <td><strong>{{ r.tutor.student.name }}</strong></td>
-                <td><span style="color: #fbbf24;">★</span> {{ r.rating }} / 5</td>
+                <td><span style="color: #fbbf24;">⭐</span> {{ r.rating }} / 5</td>
                 <td>"{{ r.comment }}"</td>
-                <td>
-                    {% if r.warning %}
-                    <span class="badge-pill badge-warning">Flagged</span>
-                    {% else %}
-                    <span class="badge-pill badge-ok">Normal</span>
-                    {% endif %}
-                </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 25px;">No ratings found in
+                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 25px;">No ratings found in
                     the system.</td>
             </tr>
             {% endfor %}
