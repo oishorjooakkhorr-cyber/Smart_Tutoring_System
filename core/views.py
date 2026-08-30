@@ -589,7 +589,7 @@ def book_slot(request, slot_id):
                   AND s.end_time > %s
                   AND b.status != 'Cancelled'
                 """,
-                [learner_id, slot["date"], slot["end_time"], slot["start_time"]]
+                [learner_id, str(slot["date"]), str(slot["end_time"]), str(slot["start_time"])]
             )
             has_conflict = cursor.fetchone()[0]
 
@@ -606,7 +606,7 @@ def book_slot(request, slot_id):
                 VALUES (%s, %s, %s, %s, %s)
             """,
                 [
-                    slot["date"],
+                    str(slot["date"]),
                     "Confirmed",
                     learner_id,
                     slot["tutor_id"],
