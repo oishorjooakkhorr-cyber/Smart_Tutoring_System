@@ -669,14 +669,11 @@ def rate_booking(request, booking_id):
             existing_rating = cursor.fetchone()
 
             if existing_rating:
-                cursor.execute(
-                    """
-                    UPDATE core_ratings 
-                    SET rating = %s, comment = %s 
-                    WHERE booking_id = %s
-                    """,
-                    [rating, comment, booking_id]
-                )
+                return render(request, "rate_booking.html", {
+                    "booking": booking,
+                    "error": "You have already submitted a rating for this session. Ratings cannot be changed once submitted.",
+                    "cannot_rate": True
+                })
             else:
                 cursor.execute(
                     """
