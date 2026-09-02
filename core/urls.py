@@ -19,4 +19,6 @@ urlpatterns = [
     path('rate_booking/<int:booking_id>/', views.rate_booking, name='rate_booking'),
     path('slots/delete/<int:slot_id>/', views.delete_slot, name='delete_slot'),
     path('ratings/delete/<int:rating_id>/', views.delete_rating, name='delete_rating'),
+    path('manage-skills/', views.manage_skills, name='manage_skills'),
+    path('upgrade-role/', views.upgrade_role, name='upgrade_role'),
 ]

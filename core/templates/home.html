@@ -203,7 +203,7 @@
             </div>
             <ul class="portal-links">
                 <li><a href="{% url 'tutors' %}"><span>🔍 Find Tutors</span> <span class="arrow">→</span></a></li>
-                <li><a href="{% url 'skills' %}"><span>💡 Explore Skills</span> <span class="arrow">→</span></a></li>
+                <li><a href="{% url 'manage_skills' %}"><span>✨ Manage My Skills</span> <span class="arrow">→</span></a></li>
                 <li><a href="{% url 'slots' %}"><span>📅 Book Available Slots</span> <span class="arrow">→</span></a>
                 </li>
                 <li><a href="{% url 'bookings' %}"><span>💻 My Booked Sessions</span> <span class="arrow">→</span></a>
@@ -220,14 +220,43 @@
                 <span class="portal-icon">👨‍🏫</span> Tutor Portal
             </div>
             <ul class="portal-links">
+                <li><a href="{% url 'manage_skills' %}"><span>✨ Manage My Skills</span> <span class="arrow">→</span></a></li>
                 <li><a href="{% url 'add_slot' %}"><span>➕ Post New Availability Slot</span> <span
                             class="arrow">→</span></a></li>
-                <li><a href="{% url 'bookings' %}"><span>🧑‍🏫 My Teaching Sessions</span> <span
+                <li><a href="{% url 'bookings' %}"><span>💻 My Teaching Sessions</span> <span
                             class="arrow">→</span></a></li>
                 <li><a href="{% url 'ratings' %}"><span>⭐ View My Ratings & Reviews</span> <span
                             class="arrow">→</span></a></li>
                 <li><a href="{% url 'badges' %}"><span>🏅 View Badges</span> <span class="arrow">→</span></a></li>
             </ul>
+        </div>
+        {% endif %}
+
+        {% if is_learner and not is_tutor and role != "admin" %}
+        <div class="portal-card" style="border-top: 3px solid #10b981; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <div class="portal-title" style="margin-bottom: 15px;">
+                <span class="portal-icon">🎓</span> Want to Teach?
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Share your knowledge and earn badges by becoming a tutor!</p>
+            <form method="POST" action="{% url 'upgrade_role' %}">
+                {% csrf_token %}
+                <input type="hidden" name="new_role" value="tutor">
+                <button type="submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">Become a Tutor</button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if is_tutor and not is_learner and role != "admin" %}
+        <div class="portal-card" style="border-top: 3px solid #38bdf8; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <div class="portal-title" style="margin-bottom: 15px;">
+                <span class="portal-icon">📚</span> Want to Learn?
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Expand your horizons and learn new skills from other tutors!</p>
+            <form method="POST" action="{% url 'upgrade_role' %}">
+                {% csrf_token %}
+                <input type="hidden" name="new_role" value="learner">
+                <button type="submit" style="background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">Become a Learner</button>
+            </form>
         </div>
         {% endif %}
     </div>

@@ -730,3 +730,88 @@ def delete_rating(request, rating_id):
         cursor.execute("DELETE FROM core_ratings WHERE rating_id = %s", [rating_id])
     
     return redirect("ratings")
+
+def manage_skills(request):
+    active_sid = request.session.get("user_sid")
+    is_tutor = request.session.get("is_tutor", False)
+    is_learner = request.session.get("is_learner", False)
+    
+    if not active_sid:
+        return redirect("login")
+        
+    if request.method == "POST":
+        action = request.POST.get("action")
+        skill_id = request.POST.get("skill_id")
+        
+        with connection.cursor() as cursor:
+            if action == "add_teach" and is_tutor:
+                try:
+                    cursor.execute("INSERT INTO core_teaches (tutor_id, skill_id) VALUES (%s, %s)", [active_sid, skill_id])
+                except:
+                    pass # Ignore unique constraint failures
+            elif action == "remove_teach" and is_tutor:
+                cursor.execute("DELETE FROM core_teaches WHERE tutor_id = %s AND skill_id = %s", [active_sid, skill_id])
+            elif action == "add_learn" and is_learner:
+                try:
+                    cursor.execute("INSERT INTO core_learns (learner_id, skill_id) VALUES (%s, %s)", [active_sid, skill_id])
+                except:
+                    pass
+            elif action == "remove_learn" and is_learner:
+                cursor.execute("DELETE FROM core_learns WHERE learner_id = %s AND skill_id = %s", [active_sid, skill_id])
+                
+        return redirect("manage_skills")
+        
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM core_skill ORDER BY skill_name")
+        all_skills = dictfetchall(cursor)
+        
+        teaching_skills = []
+        if is_tutor:
+            cursor.execute('''
+                SELECT s.* FROM core_skill s
+                JOIN core_teaches t ON s.skill_id = t.skill_id
+                WHERE t.tutor_id = %s
+            ''', [active_sid])
+            teaching_skills = dictfetchall(cursor)
+            
+        learning_skills = []
+        if is_learner:
+            cursor.execute('''
+                SELECT s.* FROM core_skill s
+                JOIN core_learns l ON s.skill_id = l.skill_id
+                WHERE l.learner_id = %s
+            ''', [active_sid])
+            learning_skills = dictfetchall(cursor)
+            
+    return render(request, "manage_skills.html", {
+        "all_skills": all_skills,
+        "teaching_skills": teaching_skills,
+        "learning_skills": learning_skills,
+        "is_tutor": is_tutor,
+        "is_learner": is_learner
+    })
+
+def upgrade_role(request):
+    if request.method == "POST":
+        active_sid = request.session.get("user_sid")
+        if not active_sid:
+            return redirect("login")
+            
+        new_role = request.POST.get("new_role")
+        
+        with connection.cursor() as cursor:
+            if new_role == "tutor" and not request.session.get("is_tutor"):
+                cursor.execute(
+                    "INSERT INTO core_tutor (student_id, completed_sessions, avg_rating, tutor_status) VALUES (%s, 0, 0.0, 'Active')",
+                    [active_sid]
+                )
+                request.session["is_tutor"] = True
+                
+            elif new_role == "learner" and not request.session.get("is_learner"):
+                cursor.execute(
+                    "INSERT INTO core_learner (student_id, learner_level) VALUES (%s, 'Beginner')",
+                    [active_sid]
+                )
+                request.session["is_learner"] = True
+                
+    return redirect("home")
