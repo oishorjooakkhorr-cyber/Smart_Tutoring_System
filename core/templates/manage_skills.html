@@ -117,7 +117,7 @@
             </select>
             <input type="text" name="new_skill_name" placeholder="Or type a new skill..." style="flex: 1; min-width: 200px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
             <input type="text" name="new_skill_category" placeholder="Category (optional)" style="flex: 0.5; min-width: 120px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
-            <button type="submit">? Add</button>
+            <button type="submit">➕ Add</button>
         </form>
 
         <table>
@@ -138,7 +138,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="action" value="remove_teach">
                             <input type="hidden" name="skill_id" value="{{ s.skill_id }}">
-                            <button type="submit" class="btn-remove">??? Remove</button>
+                            <button type="submit" class="btn-remove">🗑️ Remove</button>
                         </form>
                     </td>
                 </tr>
@@ -152,7 +152,7 @@
 
     {% if is_learner %}
     <div class="section-card" style="border-top: 3px solid #10b981;">
-        <h3>?? Skills I Want To Learn</h3>
+        <h3>🧠 Skills I Want To Learn</h3>
         
         <form method="POST" class="form-group" style="flex-wrap: wrap;">
             {% csrf_token %}
@@ -165,7 +165,7 @@
             </select>
             <input type="text" name="new_skill_name" placeholder="Or type a new skill..." style="flex: 1; min-width: 200px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
             <input type="text" name="new_skill_category" placeholder="Category (optional)" style="flex: 0.5; min-width: 120px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
-            <button type="submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">? Add</button>
+            <button type="submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">➕ Add</button>
         </form>
 
         <table>
@@ -186,7 +186,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="action" value="remove_learn">
                             <input type="hidden" name="skill_id" value="{{ s.skill_id }}">
-                            <button type="submit" class="btn-remove">??? Remove</button>
+                            <button type="submit" class="btn-remove">🗑️ Remove</button>
                         </form>
                     </td>
                 </tr>
