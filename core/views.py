@@ -277,64 +277,22 @@ def tutors(request):
         cursor.execute("SELECT skill_name FROM core_skill ORDER BY skill_name")
         all_skills = [row[0] for row in cursor.fetchall()]
 
-    from datetime import datetime, timedelta
-    now = datetime.now()
-    today_date = now.date()
-
-    past_bookings = []
-    ongoing_bookings = []
-    upcoming_bookings = []
 
     for row in data:
-        row["learner"] = {"student": {"name": row["learner_name"]}}
-        row["tutor"] = {"student": {"name": row["tutor_name"]}}
-        row["slot"] = {
-            "slot_no": row["slot_no"],
-            "start_time": row["start_time"],
-            "end_time": row["end_time"],
-            "mode": row["mode"],
-        }
-        row["can_rate"] = (role == "admin") or (active_sid and str(row["learner_id"]) == str(active_sid))
-        row["is_tutor_of_session"] = bool(active_sid and str(row["tutor_id"]) == str(active_sid))
-        
-        row["can_cancel"] = False
-        
-        try:
-            date_str = str(row["date"])
-            time_str = str(row["start_time"])
-            slot_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
-            slot_d = slot_dt.date()
-        except ValueError:
-            try:
-                slot_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
-                slot_d = slot_dt.date()
-            except ValueError:
-                slot_dt = None
-                slot_d = None
-                
-        if row["status"] == "Confirmed" and slot_dt and (slot_dt - now > timedelta(hours=48)):
-            row["can_cancel"] = True
-            
-        # Categorize
-        if row["status"] == "Cancelled" or row["status"] == "Completed" or (slot_d and slot_d < today_date):
-            past_bookings.append(row)
-        elif slot_d and slot_d == today_date:
-            ongoing_bookings.append(row)
-        else:
-            upcoming_bookings.append(row)
+        row["student"] = {"name": row["name"], "email": row["email"], "phone": row["phone"]}
 
     return render(
-        request, 
-        "bookings.html", 
+        request,
+        "tutors.html",
         {
-            "past_bookings": past_bookings,
-            "ongoing_bookings": ongoing_bookings,
-            "upcoming_bookings": upcoming_bookings,
-            "role": role, 
-            "filter_type": filter_type
-        }
+            "tutors": data,
+            "search_query": search_query,
+            "status_filter": status_filter,
+            "skill_filter": skill_filter,
+            "min_rating": min_rating,
+            "all_skills": all_skills,
+        },
     )
-
 
 
 
