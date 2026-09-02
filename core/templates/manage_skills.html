@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Skills - Smart Tutoring</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-glow: rgba(99, 102, 241, 0.5);
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h2, h3 {
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .section-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .back-link {
+            color: #818cf8;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        select {
+            flex-grow: 1;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 6px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-remove {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
+    <h2>✨ Manage Your Skills</h2>
+    <p style="color: var(--text-muted); margin-bottom: 30px;">Add or remove skills to control what you teach and what you want to learn.</p>
+
+    {% if is_tutor %}
+    <div class="section-card" style="border-top: 3px solid #6366f1;">
+        <h3>👨‍🏫 Skills I Teach</h3>
+        
+        <form method="POST" class="form-group" style="flex-wrap: wrap;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_teach">
+            <select name="skill_id" style="flex: 1; min-width: 200px;">
+                <option value="">-- Select an existing skill --</option>
+                {% for s in all_skills %}
+                <option value="{{ s.skill_id }}">{{ s.skill_name }} ({{ s.category }})</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="new_skill_name" placeholder="Or type a new skill..." style="flex: 1; min-width: 200px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+            <input type="text" name="new_skill_category" placeholder="Category (optional)" style="flex: 0.5; min-width: 120px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+            <button type="submit">? Add</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Skill Name</th>
+                    <th>Category</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in teaching_skills %}
+                <tr>
+                    <td><strong>{{ s.skill_name }}</strong></td>
+                    <td>{{ s.category }}</td>
+                    <td>
+                        <form method="POST" style="margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove_teach">
+                            <input type="hidden" name="skill_id" value="{{ s.skill_id }}">
+                            <button type="submit" class="btn-remove">??? Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">You are not teaching any skills yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if is_learner %}
+    <div class="section-card" style="border-top: 3px solid #10b981;">
+        <h3>?? Skills I Want To Learn</h3>
+        
+        <form method="POST" class="form-group" style="flex-wrap: wrap;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_learn">
+            <select name="skill_id" style="flex: 1; min-width: 200px;">
+                <option value="">-- Select an existing skill --</option>
+                {% for s in all_skills %}
+                <option value="{{ s.skill_id }}">{{ s.skill_name }} ({{ s.category }})</option>
+                {% endfor %}
+            </select>
+            <input type="text" name="new_skill_name" placeholder="Or type a new skill..." style="flex: 1; min-width: 200px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+            <input type="text" name="new_skill_category" placeholder="Category (optional)" style="flex: 0.5; min-width: 120px; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 6px;">
+            <button type="submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">? Add</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Skill Name</th>
+                    <th>Category</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in learning_skills %}
+                <tr>
+                    <td><strong>{{ s.skill_name }}</strong></td>
+                    <td>{{ s.category }}</td>
+                    <td>
+                        <form method="POST" style="margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove_learn">
+                            <input type="hidden" name="skill_id" value="{{ s.skill_id }}">
+                            <button type="submit" class="btn-remove">??? Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">You haven't added any skills to learn yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</body>
+</html>
+
+

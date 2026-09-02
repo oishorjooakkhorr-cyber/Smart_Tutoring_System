@@ -277,21 +277,65 @@ def tutors(request):
         cursor.execute("SELECT skill_name FROM core_skill ORDER BY skill_name")
         all_skills = [row[0] for row in cursor.fetchall()]
 
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    today_date = now.date()
+
+    past_bookings = []
+    ongoing_bookings = []
+    upcoming_bookings = []
+
     for row in data:
-        row["student"] = {"name": row["name"], "email": row["email"], "phone": row["phone"]}
+        row["learner"] = {"student": {"name": row["learner_name"]}}
+        row["tutor"] = {"student": {"name": row["tutor_name"]}}
+        row["slot"] = {
+            "slot_no": row["slot_no"],
+            "start_time": row["start_time"],
+            "end_time": row["end_time"],
+            "mode": row["mode"],
+        }
+        row["can_rate"] = (role == "admin") or (active_sid and str(row["learner_id"]) == str(active_sid))
+        row["is_tutor_of_session"] = bool(active_sid and str(row["tutor_id"]) == str(active_sid))
+        
+        row["can_cancel"] = False
+        
+        try:
+            date_str = str(row["date"])
+            time_str = str(row["start_time"])
+            slot_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
+            slot_d = slot_dt.date()
+        except ValueError:
+            try:
+                slot_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+                slot_d = slot_dt.date()
+            except ValueError:
+                slot_dt = None
+                slot_d = None
+                
+        if row["status"] == "Confirmed" and slot_dt and (slot_dt - now > timedelta(hours=48)):
+            row["can_cancel"] = True
+            
+        # Categorize
+        if row["status"] == "Cancelled" or row["status"] == "Completed" or (slot_d and slot_d < today_date):
+            past_bookings.append(row)
+        elif slot_d and slot_d == today_date:
+            ongoing_bookings.append(row)
+        else:
+            upcoming_bookings.append(row)
 
     return render(
-        request,
-        "tutors.html",
+        request, 
+        "bookings.html", 
         {
-            "tutors": data, 
-            "query": search_query, 
-            "status": status_filter,
-            "skill": skill_filter,
-            "min_rating": min_rating,
-            "all_skills": all_skills,
-        },
+            "past_bookings": past_bookings,
+            "ongoing_bookings": ongoing_bookings,
+            "upcoming_bookings": upcoming_bookings,
+            "role": role, 
+            "filter_type": filter_type
+        }
     )
+
+
 
 
 def learners(request):
@@ -321,6 +365,7 @@ def skills(request):
     return render(request, "skills.html", {"skills": data})
 
 
+
 def slots(request):
     active_email = request.session.get("user_email")
     active_sid = request.session.get("user_sid")
@@ -329,18 +374,30 @@ def slots(request):
     if not active_email:
         return redirect("login")
 
+    filter_tutor = request.GET.get("tutor_name", "").strip()
+    filter_skill = request.GET.get("skill_name", "").strip()
+
     query = """
-        SELECT slot.*, s.name AS student_name
+        SELECT slot.*, s.name AS student_name, sk.skill_name
         FROM core_availableslot slot
         JOIN core_tutor t ON slot.tutor_id = t.student_id
         JOIN core_student s ON t.student_id = s.sid
+        LEFT JOIN core_skill sk ON slot.skill_id = sk.skill_id
+        WHERE 1=1
     """
     params = []
 
-    # Exclude current user's own slots so a tutor cannot book their own slot as a learner
     if role != "admin" and active_sid:
-        query += " WHERE slot.tutor_id != %s"
+        query += " AND slot.tutor_id != %s"
         params.append(active_sid)
+
+    if filter_tutor:
+        query += " AND LOWER(s.name) LIKE LOWER(%s)"
+        params.append(f"%%{filter_tutor}%%")
+
+    if filter_skill:
+        query += " AND LOWER(sk.skill_name) LIKE LOWER(%s)"
+        params.append(f"%%{filter_skill}%%")
 
     with connection.cursor() as cursor:
         cursor.execute(query, params)
@@ -348,8 +405,13 @@ def slots(request):
 
     for row in data:
         row["tutor"] = {"student": {"name": row["student_name"]}}
+        row["skill_name_display"] = row["skill_name"] or "General / Unspecified"
 
-    return render(request, "slots.html", {"slots": data})
+    return render(request, "slots.html", {
+        "slots": data,
+        "filter_tutor": filter_tutor,
+        "filter_skill": filter_skill
+    })
 
 def add_slot(request):
     if not request.session.get("is_tutor"):
@@ -362,22 +424,30 @@ def add_slot(request):
         start_time = request.POST.get("start_time")
         end_time = request.POST.get("end_time")
         mode = request.POST.get("mode")
+        skill_id = request.POST.get("skill_id")
         
         with connection.cursor() as cursor:
-            # Need to get a slot_no. Let's just find the max slot_no for this tutor and add 1
             cursor.execute("SELECT MAX(slot_no) FROM core_availableslot WHERE tutor_id = %s", [tutor_id])
             max_slot = cursor.fetchone()[0]
             next_slot_no = (max_slot or 0) + 1
             
             cursor.execute("""
-                INSERT INTO core_availableslot (tutor_id, slot_no, date, start_time, end_time, mode)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, [tutor_id, next_slot_no, slot_date, start_time, end_time, mode])
+                INSERT INTO core_availableslot (tutor_id, slot_no, date, start_time, end_time, mode, skill_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, [tutor_id, next_slot_no, slot_date, start_time, end_time, mode, skill_id])
             
         return redirect("home")
         
-    return render(request, "add_slot.html")
-
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT s.skill_id, s.skill_name 
+            FROM core_teaches t 
+            JOIN core_skill s ON t.skill_id = s.skill_id 
+            WHERE t.tutor_id = %s
+        """, [tutor_id])
+        my_skills = dictfetchall(cursor)
+        
+    return render(request, "add_slot.html", {"my_skills": my_skills})
 
 def bookings(request):
     active_email = request.session.get("user_email")
@@ -438,6 +508,14 @@ def bookings(request):
         cursor.execute(query, params)
         data = dictfetchall(cursor)
 
+    from datetime import datetime, timedelta
+    now = datetime.now()
+    today_date = now.date()
+
+    past_bookings = []
+    ongoing_bookings = []
+    upcoming_bookings = []
+
     for row in data:
         row["learner"] = {"student": {"name": row["learner_name"]}}
         row["tutor"] = {"student": {"name": row["tutor_name"]}}
@@ -447,15 +525,41 @@ def bookings(request):
             "end_time": row["end_time"],
             "mode": row["mode"],
         }
-        # Only the learner who took the session (or admin) can rate it
         row["can_rate"] = (role == "admin") or (active_sid and str(row["learner_id"]) == str(active_sid))
         row["is_tutor_of_session"] = bool(active_sid and str(row["tutor_id"]) == str(active_sid))
+        
+        row["can_cancel"] = False
+        
+        try:
+            date_str = str(row["date"])
+            time_str = str(row["start_time"])
+            slot_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
+            slot_d = slot_dt.date()
+        except ValueError:
+            try:
+                slot_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+                slot_d = slot_dt.date()
+            except ValueError:
+                slot_dt = None
+                slot_d = None
+                
+        if row["status"] == "Confirmed" and slot_dt and (slot_dt - now > timedelta(hours=48)):
+            row["can_cancel"] = True
+            
+        if row["status"] == "Cancelled" or row["status"] == "Completed" or (slot_d and slot_d < today_date):
+            past_bookings.append(row)
+        elif slot_d and slot_d == today_date:
+            ongoing_bookings.append(row)
+        else:
+            upcoming_bookings.append(row)
 
     return render(
         request, 
         "bookings.html", 
         {
-            "bookings": data, 
+            "past_bookings": past_bookings,
+            "ongoing_bookings": ongoing_bookings,
+            "upcoming_bookings": upcoming_bookings,
             "role": role, 
             "filter_type": filter_type
         }
@@ -490,9 +594,16 @@ def ratings(request):
         row["tutor"] = {"student": {"name": row["tutor_name"]}}
 
     # Filter ratings specifically received by the currently logged-in tutor
+    portal = request.GET.get("portal", "")
+    
     my_ratings = []
-    if is_tutor and active_sid:
+    if is_tutor and active_sid and portal != "learner":
         my_ratings = [r for r in data if str(r.get("tutor_id")) == str(active_sid)]
+        
+    is_learner = request.session.get("is_learner", False)
+    my_given_ratings = []
+    if is_learner and active_sid and portal != "tutor":
+        my_given_ratings = [r for r in data if str(r.get("learner_id")) == str(active_sid)]
 
     return render(
         request, 
@@ -500,7 +611,11 @@ def ratings(request):
         {
             "ratings": data, 
             "my_ratings": my_ratings, 
+            "my_given_ratings": my_given_ratings,
             "is_tutor": is_tutor,
+            "is_learner": is_learner,
+            "show_received": is_tutor and portal != "learner",
+            "show_given": is_learner and portal != "tutor",
             "role": request.session.get("role")
         }
     )
@@ -509,9 +624,28 @@ def ratings(request):
 def badges(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM core_badge")
-        data = dictfetchall(cursor)
+        badges_data = dictfetchall(cursor)
+        
+        cursor.execute("""
+            SELECT 
+                ts.name, 
+                t.completed_sessions, 
+                t.avg_rating,
+                CAST((t.completed_sessions * 10) + (t.avg_rating * 20) AS INT) AS points,
+                (SELECT GROUP_CONCAT(b.badge_name, ', ') 
+                 FROM core_earns e 
+                 JOIN core_badge b ON e.badge_id = b.badge_id 
+                 WHERE e.tutor_id = t.student_id) AS earned_badges
+            FROM core_tutor t
+            JOIN core_student ts ON t.student_id = ts.sid
+            ORDER BY points DESC
+        """)
+        leaderboard = dictfetchall(cursor)
+        for tutor in leaderboard:
+            if tutor["earned_badges"]:
+                tutor["earned_badges"] = tutor["earned_badges"].replace(",", ", ")
 
-    return render(request, "badges.html", {"badges": data})
+    return render(request, "badges.html", {"badges": badges_data, "leaderboard": leaderboard})
 
 
 def book_slot(request, slot_id):
@@ -608,7 +742,7 @@ def book_slot(request, slot_id):
             """,
                 [
                     str(slot["date"]),
-                    "Confirmed",
+                    "Pending",
                     learner_id,
                     slot["tutor_id"],
                     slot["id"],
@@ -683,6 +817,8 @@ def rate_booking(request, booking_id):
                     """,
                     [rating, comment, False, booking["learner_id"], booking["tutor_id"], booking_id]
                 )
+            
+            update_tutor_stats_and_badges(booking["tutor_id"])
         return redirect("ratings")
 
     return render(request, "rate_booking.html", {"booking": booking})
@@ -742,8 +878,22 @@ def manage_skills(request):
     if request.method == "POST":
         action = request.POST.get("action")
         skill_id = request.POST.get("skill_id")
+        new_skill_name = request.POST.get("new_skill_name", "").strip()
+        new_skill_category = request.POST.get("new_skill_category", "General").strip()
         
         with connection.cursor() as cursor:
+            if new_skill_name:
+                cursor.execute("SELECT skill_id FROM core_skill WHERE LOWER(skill_name) = LOWER(%s)", [new_skill_name])
+                existing = cursor.fetchone()
+                if existing:
+                    skill_id = existing[0]
+                else:
+                    cursor.execute("INSERT INTO core_skill (skill_name, category) VALUES (%s, %s)", [new_skill_name, new_skill_category])
+                    skill_id = cursor.lastrowid
+                    
+            if not skill_id:
+                return redirect("manage_skills")
+
             if action == "add_teach" and is_tutor:
                 try:
                     cursor.execute("INSERT INTO core_teaches (tutor_id, skill_id) VALUES (%s, %s)", [active_sid, skill_id])
@@ -815,3 +965,117 @@ def upgrade_role(request):
                 request.session["is_learner"] = True
                 
     return redirect("home")
+
+
+from datetime import date
+
+def update_tutor_stats_and_badges(tutor_id):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT COUNT(*), AVG(rating) FROM core_ratings WHERE tutor_id = %s", [tutor_id])
+        stats = cursor.fetchone()
+        completed_sessions = stats[0] or 0
+        avg_rating = stats[1] or 0.0
+        
+        cursor.execute(
+            "UPDATE core_tutor SET completed_sessions = %s, avg_rating = %s WHERE student_id = %s",
+            [completed_sessions, round(avg_rating, 2), tutor_id]
+        )
+        
+        points = int((completed_sessions * 10) + (avg_rating * 20))
+        
+        cursor.execute("SELECT COUNT(*) FROM core_badge")
+        if cursor.fetchone()[0] == 0:
+            cursor.execute("INSERT INTO core_badge (badge_name, description) VALUES ('Rising Star', '50+ Points')")
+            cursor.execute("INSERT INTO core_badge (badge_name, description) VALUES ('Expert Tutor', '150+ Points')")
+            cursor.execute("INSERT INTO core_badge (badge_name, description) VALUES ('Master Educator', '300+ Points')")
+            
+        cursor.execute("SELECT badge_id, badge_name FROM core_badge")
+        all_badges = dictfetchall(cursor)
+        
+        for badge in all_badges:
+            award = False
+            if badge["badge_name"] == "Rising Star" and points >= 50:
+                award = True
+            elif badge["badge_name"] == "Expert Tutor" and points >= 150:
+                award = True
+            elif badge["badge_name"] == "Master Educator" and points >= 300:
+                award = True
+                
+            if award:
+                cursor.execute("SELECT 1 FROM core_earns WHERE tutor_id = %s AND badge_id = %s", [tutor_id, badge["badge_id"]])
+                if not cursor.fetchone():
+                    cursor.execute(
+                        "INSERT INTO core_earns (tutor_id, badge_id, date_earned) VALUES (%s, %s, %s)",
+                        [tutor_id, badge["badge_id"], str(date.today())]
+                    )
+
+def confirm_booking(request, booking_id):
+    active_sid = request.session.get("user_sid")
+    if not active_sid:
+        return redirect("login")
+    
+    with connection.cursor() as cursor:
+        # Check if the booking belongs to this tutor
+        cursor.execute("SELECT tutor_id FROM core_booking WHERE booking_id = %s", [booking_id])
+        booking = cursor.fetchone()
+        if booking and str(booking[0]) == str(active_sid):
+            cursor.execute("UPDATE core_booking SET status = 'Confirmed' WHERE booking_id = %s", [booking_id])
+            
+    return redirect("bookings")
+
+from datetime import datetime, timedelta
+
+def cancel_booking(request, booking_id):
+    active_sid = request.session.get("user_sid")
+    if not active_sid:
+        return redirect("login")
+        
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT b.learner_id, b.tutor_id, s.date, s.start_time, b.status 
+            FROM core_booking b
+            JOIN core_availableslot s ON b.slot_id = s.id
+            WHERE b.booking_id = %s
+        """, [booking_id])
+        booking = cursor.fetchone()
+        
+        if booking:
+            learner_id, tutor_id, slot_date, slot_time, status = booking
+            
+            # Allow cancellation only if they are the learner or tutor
+            if str(active_sid) in [str(learner_id), str(tutor_id)] and status == 'Confirmed':
+                try:
+                    # Parse the slot datetime
+                    date_str = str(slot_date)
+                    time_str = str(slot_time)
+                    slot_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    try:
+                        slot_dt = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+                    except ValueError:
+                        slot_dt = None
+                        
+                if slot_dt:
+                    now = datetime.now()
+                    # Check if it's more than 48 hours away
+                    if slot_dt - now > timedelta(hours=48):
+                        cursor.execute("UPDATE core_booking SET status = 'Cancelled' WHERE booking_id = %s", [booking_id])
+                        
+    return redirect("bookings")
+
+def reject_booking(request, booking_id):
+    active_sid = request.session.get("user_sid")
+    if not active_sid:
+        return redirect("login")
+    
+    with connection.cursor() as cursor:
+        # Check if the booking belongs to this tutor
+        cursor.execute("SELECT tutor_id FROM core_booking WHERE booking_id = %s", [booking_id])
+        booking = cursor.fetchone()
+        if booking and str(booking[0]) == str(active_sid):
+            cursor.execute("UPDATE core_booking SET status = 'Cancelled' WHERE booking_id = %s", [booking_id])
+            
+    return redirect("bookings")
+
+
+

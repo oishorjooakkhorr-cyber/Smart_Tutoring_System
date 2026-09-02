@@ -75,6 +75,13 @@ class AvailableSlot(models.Model):
     )
 
     slot_no = models.IntegerField()
+    
+    skill = models.ForeignKey(
+        Skill,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
 
     start_time = models.TimeField()
     end_time = models.TimeField()

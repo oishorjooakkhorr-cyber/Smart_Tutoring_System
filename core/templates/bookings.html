@@ -160,55 +160,234 @@
     <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
     <h2>📖 Session Bookings</h2>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Booking ID</th>
-                <th>Learner</th>
-                <th>Tutor</th>
-                <th>Slot</th>
-                <th>Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for b in bookings %}
-            <tr>
-                <td>#{{ b.booking_id }}</td>
-                <td><strong>{{ b.learner.student.name }}</strong></td>
-                <td><strong>{{ b.tutor.student.name }}</strong></td>
-                <td>Slot #{{ b.slot.slot_no }}</td>
-                <td>{{ b.date }}</td>
-                <td>
-                    {% if b.status == "Confirmed" %}
-                    <span class="badge-pill badge-confirmed">Confirmed</span>
-                    {% elif b.status == "Completed" %}
-                    <span class="badge-pill badge-completed">Completed</span>
-                    {% elif b.status == "Pending" %}
-                    <span class="badge-pill badge-pending">Pending</span>
-                    {% else %}
-                    <span class="badge-pill badge-cancelled">{{ b.status }}</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if b.given_rating %}
-                    <span style="color: #34d399; font-weight: 500;">Already rated: ⭐ {{ b.given_rating }}/5</span>
-                    {% elif b.can_rate %}
-                    <a href="{% url 'rate_booking' b.booking_id %}" class="btn-rate">⭐ Rate</a>
-                    {% else %}
-                    <span style="color: var(--text-muted); font-size: 0.9em;">(Learner only)</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">No session bookings
-                    found.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    
+    <div style="background: var(--bg-secondary); border-radius: 10px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 30px;">
+        <h3 style="margin-top: 0; margin-bottom: 15px; color: #10b981;">🟢 Ongoing Sessions (Today)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Learner</th>
+                    <th>Tutor</th>
+                    <th>Slot</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in ongoing_bookings %}
+                <tr>
+                    <td>#{{ b.booking_id }}</td>
+                    <td><strong>{{ b.learner.student.name }}</strong></td>
+                    <td><strong>{{ b.tutor.student.name }}</strong></td>
+                    <td>Slot #{{ b.slot.slot_no }}</td>
+                    <td>{{ b.date }}</td>
+                    <td>
+                        {% if b.status == "Confirmed" %}
+                        <span class="badge-pill badge-confirmed">Confirmed</span>
+                        {% elif b.status == "Completed" %}
+                        <span class="badge-pill badge-completed">Completed</span>
+                        {% elif b.status == "Pending" %}
+                        <span class="badge-pill badge-pending">Pending</span>
+                        {% else %}
+                        <span class="badge-pill badge-cancelled">{{ b.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.status == "Pending" and b.is_tutor_of_session %}
+                            <a href="{% url 'confirm_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 4px; width: 100%;">Confirm</button>
+                            </a>
+                            <a href="{% url 'reject_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; width: 100%;">Reject</button>
+                            </a>
+                        {% elif b.status == "Pending" %}
+                            <span style="color: var(--text-muted); font-size: 0.9em;">Awaiting Confirmation...</span>
+                        {% elif b.given_rating %}
+                            <span style="color: #34d399; font-weight: 500;">Already rated: ⭐ {{ b.given_rating }}/5</span>
+                        {% elif b.can_rate and b.status == "Confirmed" %}
+                            <a href="{% url 'rate_booking' b.booking_id %}" class="btn-rate" style="margin-bottom: 4px;">⭐ Rate</a>
+                            {% if b.can_cancel %}
+                            <br>
+                            <a href="{% url 'cancel_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; width: 100%;">Cancel Slot</button>
+                            </a>
+                            {% endif %}
+                        {% elif b.is_tutor_of_session %}
+                            {% if b.can_cancel %}
+                            <a href="{% url 'cancel_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; width: 100%;">Cancel Slot</button>
+                            </a>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.9em;">(Learner rates this)</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.9em;">(Not available)</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">No sessions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <div style="background: var(--bg-secondary); border-radius: 10px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 30px;">
+        <h3 style="margin-top: 0; margin-bottom: 15px; color: #38bdf8;">📅 Upcoming Sessions</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Learner</th>
+                    <th>Tutor</th>
+                    <th>Slot</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in upcoming_bookings %}
+                <tr>
+                    <td>#{{ b.booking_id }}</td>
+                    <td><strong>{{ b.learner.student.name }}</strong></td>
+                    <td><strong>{{ b.tutor.student.name }}</strong></td>
+                    <td>Slot #{{ b.slot.slot_no }}</td>
+                    <td>{{ b.date }}</td>
+                    <td>
+                        {% if b.status == "Confirmed" %}
+                        <span class="badge-pill badge-confirmed">Confirmed</span>
+                        {% elif b.status == "Completed" %}
+                        <span class="badge-pill badge-completed">Completed</span>
+                        {% elif b.status == "Pending" %}
+                        <span class="badge-pill badge-pending">Pending</span>
+                        {% else %}
+                        <span class="badge-pill badge-cancelled">{{ b.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.status == "Pending" and b.is_tutor_of_session %}
+                            <a href="{% url 'confirm_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 4px; width: 100%;">Confirm</button>
+                            </a>
+                            <a href="{% url 'reject_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; width: 100%;">Reject</button>
+                            </a>
+                        {% elif b.status == "Pending" %}
+                            <span style="color: var(--text-muted); font-size: 0.9em;">Awaiting Confirmation...</span>
+                        {% elif b.given_rating %}
+                            <span style="color: #34d399; font-weight: 500;">Already rated: ⭐ {{ b.given_rating }}/5</span>
+                        {% elif b.can_rate and b.status == "Confirmed" %}
+                            <a href="{% url 'rate_booking' b.booking_id %}" class="btn-rate" style="margin-bottom: 4px;">⭐ Rate</a>
+                            {% if b.can_cancel %}
+                            <br>
+                            <a href="{% url 'cancel_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; width: 100%;">Cancel Slot</button>
+                            </a>
+                            {% endif %}
+                        {% elif b.is_tutor_of_session %}
+                            {% if b.can_cancel %}
+                            <a href="{% url 'cancel_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; width: 100%;">Cancel Slot</button>
+                            </a>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.9em;">(Learner rates this)</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.9em;">(Not available)</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">No sessions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <div style="background: var(--bg-secondary); border-radius: 10px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 30px;">
+        <h3 style="margin-top: 0; margin-bottom: 15px; color: #94a3b8;">🕒 Past & Cancelled Sessions</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Learner</th>
+                    <th>Tutor</th>
+                    <th>Slot</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in past_bookings %}
+                <tr>
+                    <td>#{{ b.booking_id }}</td>
+                    <td><strong>{{ b.learner.student.name }}</strong></td>
+                    <td><strong>{{ b.tutor.student.name }}</strong></td>
+                    <td>Slot #{{ b.slot.slot_no }}</td>
+                    <td>{{ b.date }}</td>
+                    <td>
+                        {% if b.status == "Confirmed" %}
+                        <span class="badge-pill badge-confirmed">Confirmed</span>
+                        {% elif b.status == "Completed" %}
+                        <span class="badge-pill badge-completed">Completed</span>
+                        {% elif b.status == "Pending" %}
+                        <span class="badge-pill badge-pending">Pending</span>
+                        {% else %}
+                        <span class="badge-pill badge-cancelled">{{ b.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if b.status == "Pending" and b.is_tutor_of_session %}
+                            <a href="{% url 'confirm_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; margin-bottom: 4px; width: 100%;">Confirm</button>
+                            </a>
+                            <a href="{% url 'reject_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; width: 100%;">Reject</button>
+                            </a>
+                        {% elif b.status == "Pending" %}
+                            <span style="color: var(--text-muted); font-size: 0.9em;">Awaiting Confirmation...</span>
+                        {% elif b.given_rating %}
+                            <span style="color: #34d399; font-weight: 500;">Already rated: ⭐ {{ b.given_rating }}/5</span>
+                        {% elif b.can_rate and b.status == "Confirmed" %}
+                            <a href="{% url 'rate_booking' b.booking_id %}" class="btn-rate" style="margin-bottom: 4px;">⭐ Rate</a>
+                            {% if b.can_cancel %}
+                            <br>
+                            <a href="{% url 'cancel_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; width: 100%;">Cancel Slot</button>
+                            </a>
+                            {% endif %}
+                        {% elif b.is_tutor_of_session %}
+                            {% if b.can_cancel %}
+                            <a href="{% url 'cancel_booking' b.booking_id %}" style="text-decoration: none;">
+                                <button style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; width: 100%;">Cancel Slot</button>
+                            </a>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.9em;">(Learner rates this)</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.9em;">(Not available)</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">No sessions found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 </body>
 
 </html>

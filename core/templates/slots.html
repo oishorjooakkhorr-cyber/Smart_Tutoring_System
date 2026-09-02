@@ -138,11 +138,27 @@
     <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
     <h2>📅 Available Slots to Book</h2>
 
+    <div style="background: var(--bg-secondary); padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+        <form method="GET" style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap;">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Filter by Tutor Name</label>
+                <input type="text" name="tutor_name" value="{{ filter_tutor }}" placeholder="e.g. Alice" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Filter by Skill</label>
+                <input type="text" name="skill_name" value="{{ filter_skill }}" placeholder="e.g. Python" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: white;">
+            </div>
+            <button type="submit" style="padding: 9px 20px; height: 37px;">Search</button>
+            <a href="{% url 'slots' %}" style="color: var(--text-muted); text-decoration: none; padding: 9px 10px; height: 37px; display: inline-flex; align-items: center; border: 1px solid var(--border-color); border-radius: 6px; background: #0f172a;">Clear</a>
+        </form>
+    </div>
+
     <table>
         <thead>
             <tr>
                 <th>Tutor</th>
                 <th>Slot No</th>
+                <th>Skill</th>
                 <th>Date</th>
                 <th>Time Window</th>
                 <th>Mode</th>
@@ -154,6 +170,7 @@
             <tr>
                 <td><strong>{{ sl.tutor.student.name }}</strong></td>
                 <td>Slot #{{ sl.slot_no }}</td>
+                <td>{{ sl.skill_name_display }}</td>
                 <td>{{ sl.date }}</td>
                 <td>{{ sl.start_time }} – {{ sl.end_time }}</td>
                 <td><span class="badge-mode">{{ sl.mode }}</span></td>
@@ -177,3 +194,5 @@
 </body>
 
 </html>
+
+

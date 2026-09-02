@@ -208,7 +208,7 @@
                 </li>
                 <li><a href="{% url 'bookings' %}"><span>💻 My Booked Sessions</span> <span class="arrow">→</span></a>
                 </li>
-                <li><a href="{% url 'ratings' %}"><span>⭐ View All Tutor Ratings</span> <span class="arrow">→</span></a>
+                <li><a href="{% url 'ratings' %}?portal=learner"><span>⭐ View All Tutor Ratings</span> <span class="arrow">→</span></a>
                 </li>
             </ul>
         </div>
@@ -225,7 +225,7 @@
                             class="arrow">→</span></a></li>
                 <li><a href="{% url 'bookings' %}"><span>💻 My Teaching Sessions</span> <span
                             class="arrow">→</span></a></li>
-                <li><a href="{% url 'ratings' %}"><span>⭐ View My Ratings & Reviews</span> <span
+                <li><a href="{% url 'ratings' %}?portal=tutor"><span>⭐ View My Ratings & Reviews</span> <span
                             class="arrow">→</span></a></li>
                 <li><a href="{% url 'badges' %}"><span>🏅 View Badges</span> <span class="arrow">→</span></a></li>
             </ul>

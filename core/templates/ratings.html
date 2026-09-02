@@ -141,7 +141,7 @@
     <a href="{% url 'home' %}" class="back-link">← Back to Home</a>
     <h2>⭐ Ratings & Feedback</h2>
 
-    {% if is_tutor %}
+    {% if show_received %}
     <div
         style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(56, 189, 248, 0.05)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 10px; padding: 18px 24px; margin-bottom: 24px;">
         <h3 style="margin-top: 0; color: #a5b4fc;">🧑‍🏫 Ratings Received by Me (My Feedback)</h3>
@@ -173,6 +173,41 @@
         </table>
     </div>
 
+    <hr>
+    {% endif %}
+
+    {% if show_given %}
+    <div
+        style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.05)); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 18px 24px; margin-bottom: 24px;">
+        <h3 style="margin-top: 0; color: #6ee7b7;">🎓 Ratings Given by Me</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Rating ID</th>
+                    <th>Tutor</th>
+                    <th>Rating Score</th>
+                    <th>Feedback Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in my_given_ratings %}
+                <tr>
+                    <td>#{{ r.rating_id }}</td>
+                    <td><strong>{{ r.tutor.student.name }}</strong></td>
+                    <td><span style="color: #fbbf24; font-size: 1.1rem;">⭐</span> <strong>{{ r.rating }} / 5</strong>
+                    </td>
+                    <td>"{{ r.comment }}"</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 25px;">You haven't
+                        given any feedback ratings yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
     <hr>
     {% endif %}
 

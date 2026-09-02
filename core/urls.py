@@ -21,4 +21,7 @@ urlpatterns = [
     path('ratings/delete/<int:rating_id>/', views.delete_rating, name='delete_rating'),
     path('manage-skills/', views.manage_skills, name='manage_skills'),
     path('upgrade-role/', views.upgrade_role, name='upgrade_role'),
+    path('bookings/confirm/<int:booking_id>/', views.confirm_booking, name='confirm_booking'),
+    path('bookings/reject/<int:booking_id>/', views.reject_booking, name='reject_booking'),
+    path('bookings/cancel/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
 ]
