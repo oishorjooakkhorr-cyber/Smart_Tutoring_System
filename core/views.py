@@ -891,13 +891,24 @@ def manage_skills(request):
             ''', [active_sid])
             learning_skills = dictfetchall(cursor)
             
+    
+    portal = request.GET.get("portal", "")
+    show_teach = True
+    show_learn = True
+    
+    if portal == "learner" and is_learner:
+        show_teach = False
+    elif portal == "tutor" and is_tutor:
+        show_learn = False
+        
     return render(request, "manage_skills.html", {
         "all_skills": all_skills,
         "teaching_skills": teaching_skills,
         "learning_skills": learning_skills,
         "is_tutor": is_tutor,
         "is_learner": is_learner
-    })
+    , "show_teach": show_teach, "show_learn": show_learn})
+
 
 def upgrade_role(request):
     if request.method == "POST":

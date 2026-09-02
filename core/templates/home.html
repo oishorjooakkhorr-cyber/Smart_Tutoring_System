@@ -203,7 +203,7 @@
             </div>
             <ul class="portal-links">
                 <li><a href="{% url 'tutors' %}"><span>🔍 Find Tutors</span> <span class="arrow">→</span></a></li>
-                <li><a href="{% url 'manage_skills' %}"><span>✨ Manage My Skills</span> <span class="arrow">→</span></a></li>
+                <li><a href="{% url 'manage_skills' %}?portal=learner"><span>✨ Manage My Skills</span> <span class="arrow">→</span></a></li>
                 <li><a href="{% url 'slots' %}"><span>📅 Book Available Slots</span> <span class="arrow">→</span></a>
                 </li>
                 <li><a href="{% url 'bookings' %}"><span>💻 My Booked Sessions</span> <span class="arrow">→</span></a>
@@ -220,7 +220,7 @@
                 <span class="portal-icon">👨‍🏫</span> Tutor Portal
             </div>
             <ul class="portal-links">
-                <li><a href="{% url 'manage_skills' %}"><span>✨ Manage My Skills</span> <span class="arrow">→</span></a></li>
+                <li><a href="{% url 'manage_skills' %}?portal=tutor"><span>✨ Manage My Skills</span> <span class="arrow">→</span></a></li>
                 <li><a href="{% url 'add_slot' %}"><span>➕ Post New Availability Slot</span> <span
                             class="arrow">→</span></a></li>
                 <li><a href="{% url 'bookings' %}"><span>💻 My Teaching Sessions</span> <span

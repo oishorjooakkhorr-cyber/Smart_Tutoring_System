@@ -102,7 +102,7 @@
     <h2>✨ Manage Your Skills</h2>
     <p style="color: var(--text-muted); margin-bottom: 30px;">Add or remove skills to control what you teach and what you want to learn.</p>
 
-    {% if is_tutor %}
+    {% if is_tutor and show_teach %}
     <div class="section-card" style="border-top: 3px solid #6366f1;">
         <h3>👨‍🏫 Skills I Teach</h3>
         
@@ -150,7 +150,7 @@
     </div>
     {% endif %}
 
-    {% if is_learner %}
+    {% if is_learner and show_learn %}
     <div class="section-card" style="border-top: 3px solid #10b981;">
         <h3>🧠 Skills I Want To Learn</h3>
         
